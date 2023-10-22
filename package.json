@@ -1,0 +1,38 @@
+{
+    "name": "social-connect-dapp",
+    "version": "1.0.0",
+    "description": "Custom Celo Composer project.",
+    "private": true,
+    "author": "Celo",
+    "license": "MIT",
+    "scripts": {
+        "react-app:dev": "yarn workspace @social-connect-dapp/react-app dev",
+        "react-app:build": "yarn workspace @social-connect-dapp/react-app build",
+        "react-app:start": "yarn workspace @social-connect-dapp/react-app start",
+        "react-app:lint": "yarn workspace @social-connect-dapp/react-app lint",
+        "hardhat:test": "yarn workspace @social-connect-dapp/hardhat test",
+        "hardhat:test-local": "yarn workspace @social-connect-dapp/hardhat test-local",
+        "hardhat:create-account": "yarn workspace @social-connect-dapp/hardhat create-account",
+        "hardhat:accounts": "yarn workspace @social-connect-dapp/hardhat accounts",
+        "hardhat:devchain": "yarn workspace @social-connect-dapp/hardhat devchain",
+        "hardhat:deploy": "yarn workspace @social-connect-dapp/hardhat deploy",
+        "hardhat:deploy-reset-watch": "yarn workspace @social-connect-dapp/hardhat deploy-reset-watch",
+        "hardhat:watch": "yarn workspace @social-connect-dapp/hardhat watch",
+        "hardhat:fork-mainnet": "yarn workspace @social-connect-dapp/hardhat fork-mainnet"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/celo-org/celo-composer.git"
+    },
+    "bugs": {
+        "url": "https://github.com/celo-org/celo-composer/issues"
+    },
+    "homepage": "https://github.com/celo-org/celo-composer/blob/main/README.md",
+    "workspaces": [
+        "packages/*"
+    ],
+    "keywords": [
+        "celo-composer",
+        "celo"
+    ]
+}
