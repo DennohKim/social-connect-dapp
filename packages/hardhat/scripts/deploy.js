@@ -1,19 +1,15 @@
 const { ethers } = require('hardhat');
 
 async function main() {
-  // Load the marketplace contract artifacts
-  const BatchPaymentsFactory = await ethers.getContractFactory(
-    'BatchPayments'
-  );
+  // Deploy Management contract
+  const Management = await ethers.getContractFactory('Management');
+  const management = await Management.deploy();
+  console.log('Management contract address:', management.address);
 
-  // Deploy the contract
-  const BatchPaymentsContract = await BatchPaymentsFactory.deploy();
-
-  // Wait for deployment to finish
-  await BatchPaymentsContract.deployed();
-
-  // Log the address of the new contract
-  console.log('BatchPayments deployed to:',BatchPaymentsContract.address);
+  // Deploy SavingsPool contract
+  const SavingsPool = await ethers.getContractFactory('SavingsPool');
+  const savingsPool = await SavingsPool.deploy(management.address);
+  console.log('SavingsPool contract address:', savingsPool.address);
 }
 
 main()
