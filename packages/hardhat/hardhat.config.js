@@ -16,50 +16,55 @@ const DEVCHAIN_MNEMONIC =
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-    defaultNetwork,
-    networks: {
-        localhost: {
-            url: "http://127.0.0.1:8545",
-            accounts: {
-                mnemonic: DEVCHAIN_MNEMONIC,
-            },
-        },
-        alfajores: {
-            url: "https://alfajores-forno.celo-testnet.org",
-            accounts: [process.env.PRIVATE_KEY],
-            chainId: 44787,
-        },
-        celo: {
-            url: "https://forno.celo.org",
-            accounts: [process.env.PRIVATE_KEY],
-            chainId: 42220,
-        },
+  defaultNetwork,
+  networks: {
+    localhost: {
+      url: 'http://127.0.0.1:8545',
+      accounts: {
+        mnemonic: DEVCHAIN_MNEMONIC,
+      },
     },
-    etherscan: {
-        apiKey: {
-            // Get it from here: https://celoscan.io/myapikey
-            alfajores: process.env.CELOSCAN_API_KEY,
-            celo: process.env.CELOSCAN_API_KEY,
-        },
+    alfajores: {
+      url: 'https://alfajores-forno.celo-testnet.org',
+      accounts: [process.env.PRIVATE_KEY],
+      chainId: 44787,
     },
-    solidity: {
-        version: "0.8.19",
+    celo: {
+      url: 'https://forno.celo.org',
+      accounts: [process.env.PRIVATE_KEY],
+      chainId: 42220,
     },
-    /**
-     * Named Accounts become available as variable names in scripts
-     * Learn more: https://github.com/wighawag/hardhat-deploy#1-namedaccounts-ability-to-name-addresses
-     */
-    namedAccounts: {
-        deployer: 0,
-        alice: 1,
-        bob: 2,
+    sepolia: {
+      url: 'https://eth-sepolia.g.alchemy.com/v2/IFnr6GF0NeJvLjyYuuC4EwYl-BphZBy5',
+      accounts: [process.env.PRIVATE_KEY],
+      chainId: 11155111,
     },
-    typechain: {
-        outDir: "types",
-        target: "web3-v1",
-        alwaysGenerateOverloads: false, // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
-        externalArtifacts: ["externalArtifacts/*.json"], // optional array of glob patterns with external artifacts to process (for example external libs from node_modules)
+  },
+  etherscan: {
+    apiKey: {
+      // Get it from here: https://celoscan.io/myapikey
+      alfajores: process.env.CELOSCAN_API_KEY,
+      celo: process.env.CELOSCAN_API_KEY,
     },
+  },
+  solidity: {
+    version: '0.8.19',
+  },
+  /**
+   * Named Accounts become available as variable names in scripts
+   * Learn more: https://github.com/wighawag/hardhat-deploy#1-namedaccounts-ability-to-name-addresses
+   */
+  namedAccounts: {
+    deployer: 0,
+    alice: 1,
+    bob: 2,
+  },
+  typechain: {
+    outDir: 'types',
+    target: 'web3-v1',
+    alwaysGenerateOverloads: false, // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
+    externalArtifacts: ['externalArtifacts/*.json'], // optional array of glob patterns with external artifacts to process (for example external libs from node_modules)
+  },
 };
 
 // This is a sample Hardhat task. To learn how to create your own go to

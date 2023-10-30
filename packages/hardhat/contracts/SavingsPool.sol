@@ -18,6 +18,8 @@ contract SavingsPool {
 
     //Struct storing the pool Details 
    struct PoolDetails {
+	string  poolName;
+	string poolDescription;
     address owner;
     address token;
     uint maxParticipants;
@@ -57,7 +59,7 @@ contract SavingsPool {
     }
 
 //function allows for users to create pools
-function createPool(uint _maxParticipants, uint _contributionAmt,uint _durationPerTurn, bool _isRestricted) external {
+function createPool(string memory _poolName, string memory poolDescription, uint _maxParticipants, uint _contributionAmt,uint _durationPerTurn, bool _isRestricted) external {
     require(cUsdTokenAddress != address(0), "Invalid token");
     require (_maxParticipants!= 0,"Pool Needs a Valid number of Participants");
     require (_contributionAmt!= 0, "Enter a valid Contribution Amount");
@@ -69,6 +71,7 @@ function createPool(uint _maxParticipants, uint _contributionAmt,uint _durationP
     IERC20 token  = IERC20(cUsdTokenAddress);
     uint deposit = _calculateDeposit(contributionInEth);
 
+
     if(token.balanceOf(msg.sender)<deposit) revert("Not Enough Tokens For the Deposit");
     if (token.allowance(msg.sender, address(this)) < deposit) {
         require(token.approve(address(this), deposit), "Token approval failed");
@@ -77,6 +80,8 @@ function createPool(uint _maxParticipants, uint _contributionAmt,uint _durationP
     depositAmounts[poolID][msg.sender] = deposit;
 
     PoolDetails storage startPool = pool[poolID];
+	startPool.poolName = _poolName;
+	startPool.poolDescription = poolDescription;
     startPool.owner = msg.sender;
     startPool.contributionPerParticipant = _contributionAmt *10**18;
     startPool.maxParticipants = _maxParticipants;

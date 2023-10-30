@@ -1,7 +1,8 @@
 import { Disclosure } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useConnect } from "wagmi";
 import { InjectedConnector } from "wagmi/connectors/injected";
@@ -11,6 +12,8 @@ export default function Header() {
   const { connect } = useConnect({
     connector: new InjectedConnector(),
   });
+
+  const router = useRouter();
 
   useEffect(() => {
     if (window.ethereum && window.ethereum.isMiniPay) {
@@ -37,15 +40,15 @@ export default function Header() {
                 </Disclosure.Button>
               </div>
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                <div className="flex flex-shrink-0 items-center">
+                <Link href="/" className="flex flex-shrink-0 items-center">
                   <Image
-                    className="block h-8 w-auto sm:block lg:block"
-                    src="/logo.svg"
+                    className="block h-16 w-auto sm:block lg:block"
+                    src="/Chamaa_Logo.svg"
                     width="24"
                     height="24"
-                    alt="Celo Logo"
+                    alt="Chamaa Logo"
                   />
-                </div>
+                </Link>
                 <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                   <a
                     href="#"
@@ -55,13 +58,7 @@ export default function Header() {
                   </a>
                 </div>
               </div>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                {!hideConnectBtn && (
-                  <ConnectButton
-                    showBalance={{ smallScreen: true, largeScreen: false }}
-                  />
-                )}
-              </div>
+              
             </div>
           </div>
 

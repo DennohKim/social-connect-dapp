@@ -9,6 +9,8 @@ import Layout from '../components/Layout';
 import '../styles/globals.css';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { Lexend as FontSans } from 'next/font/google';
+import { Toaster } from 'react-hot-toast';
+
 
 
 export const fontSans = FontSans({
@@ -37,13 +39,14 @@ function App({ Component, pageProps }: AppProps) {
           font-family: ${fontSans.style.fontFamily};
         }
       `}</style>
-        <WagmiConfig config={wagmiConfig}>
-          <RainbowKitProvider chains={chains} appInfo={appInfo} coolMode={true}>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </RainbowKitProvider>
-        </WagmiConfig>
+      <WagmiConfig config={wagmiConfig}>
+        <RainbowKitProvider chains={chains} appInfo={appInfo} coolMode={true}>
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+          <Toaster position='top-center' />
+        </RainbowKitProvider>
+      </WagmiConfig>
     </>
   );
 }
