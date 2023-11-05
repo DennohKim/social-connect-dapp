@@ -1,7 +1,27 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity ^0.8.17;
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Management.sol";
+
+interface IERC20Token {
+    function transfer(address, uint256) external returns (bool);
+
+    function approve(address, uint256) external returns (bool);
+
+    function transferFrom(address, address, uint256) external returns (bool);
+
+    function totalSupply() external view returns (uint256);
+
+    function balanceOf(address) external view returns (uint256);
+
+    function allowance(address, address) external view returns (uint256);
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
+}
 
 contract SavingsPool {
     event PoolStarted(uint poolid, address _poolOwner, uint maxParticipants, uint contributions);
@@ -68,7 +88,7 @@ function createPool(string memory _poolName, string memory poolDescription, uint
     uint poolID = ++poolCounter;
     uint contributionInEth = _contributionAmt*10**18;
     //Owner must send deposit equivalent to 2 contributions
-    IERC20 token  = IERC20(cUsdTokenAddress);
+    IERC20Token token  = IERC20Token(cUsdTokenAddress);
     uint deposit = _calculateDeposit(contributionInEth);
 
 
@@ -116,7 +136,7 @@ function joinPool(uint _id) external {
     }
 
 
-    IERC20 token = IERC20(cUsdTokenAddress);
+    IERC20Token token = IERC20Token(cUsdTokenAddress);
     
     //Send the deposit
     if(token.balanceOf(msg.sender)<deposit) revert("Not Enough Tokens For the Deposit");
@@ -182,7 +202,7 @@ function claimTurn(uint _poolID) external {
     }
 
     // Send remaining tokens to msg sender
-    IERC20 token = IERC20(cUsdTokenAddress);
+    IERC20Token token = IERC20Token(cUsdTokenAddress);
     uint remainingTokens = turn[_poolID][currentTurn].turnBal;
 
     // Transfer remaining tokens to the claimant
@@ -240,7 +260,7 @@ function _isParticipant(uint _poolID, address _address) public view returns(bool
 }
 //internal functions
 function _contribute( uint _poolId,uint _turnId,uint _amount) internal {
-    IERC20 token  = IERC20(cUsdTokenAddress);
+    IERC20Token token  = IERC20Token(cUsdTokenAddress);
     if(token.balanceOf(msg.sender)<_amount) revert("Not Enough Tokens For the Deposit");
     if (token.allowance(msg.sender, address(this)) < _amount) {
         require(token.approve(address(this), _amount), "Token approval failed");
@@ -302,7 +322,7 @@ function _useDeposit(uint _poolId,uint _turnId, address _address) internal{
 
 function _returnDeposits(uint _poolID) internal {
     uint _recipients = _checkParticipantCount(_poolID);
-    IERC20 token  = IERC20(cUsdTokenAddress);
+    IERC20Token token  = IERC20Token(cUsdTokenAddress);
 
     for(uint i = 0; i < _recipients-1;){
         address receiver = pool[_poolID].participants[i];
