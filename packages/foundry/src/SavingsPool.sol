@@ -26,9 +26,7 @@ interface IERC20Token {
 
 contract SavingsPool {
     ManagementContract mgmt;
-
     struct Pool {
-        uint poolId;
         address owner;
         string name;
         uint contributionPerParticipant;
@@ -46,7 +44,6 @@ contract SavingsPool {
     mapping(uint => uint) poolContributionbalances;
     mapping(uint => mapping(address => bool)) hascontributed;
     IERC20Token token;
-    uint[] public poolIds;
 
     constructor(address _mgmt) {
         token = IERC20Token(cUsdTokenAddress);
@@ -68,7 +65,7 @@ contract SavingsPool {
     uint public poolCounter;
 
     address internal cUsdTokenAddress =
-        0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
+        0x78c4E798b65f1c96c4eEC6f5F93E51584593e723;
 
     event PoolCreated(
         uint poolId,
@@ -107,7 +104,6 @@ contract SavingsPool {
         address[] memory initialParticipants = new address[](1);
         initialParticipants[0] = msg.sender; // Add the owner as the initial participant.
         pools[_poolID] = Pool(
-            _poolID,
             msg.sender,
             name,
             contributionPerParticipant,
@@ -119,7 +115,6 @@ contract SavingsPool {
             _isRestricted,
             0
         );
-        poolIds.push(_poolID);
 
         emit PoolCreated(
             _poolID,
@@ -287,23 +282,10 @@ contract SavingsPool {
 
     //getall
     function getAllSavingPools() public view returns (Pool[] memory) {
-        Pool[] memory result = new Pool[](poolIds.length);
+        Pool[] memory result = new Pool[](poolCounter);
 
-        for (uint i = 0; i < poolIds.length; i++) {
-            Pool storage pool = pools[poolIds[i]];
-            result[i] = Pool({
-                poolId: poolIds[i],
-                owner: pool.owner,
-                name: pool.name,
-                contributionPerParticipant: pool.contributionPerParticipant,
-                maxParticipants: pool.maxParticipants,
-                durationPerTurn: pool.durationPerTurn,
-                currentTurn: pool.currentTurn,
-                active: pool.active,
-                participants: pool.participants,
-                isRestrictedPool: pool.isRestrictedPool,
-                userContibutionNumber: pool.userContibutionNumber
-            });
+        for (uint i = 1; i <= poolCounter; i++) {
+            result[i - 1] = pools[i];
         }
 
         return result;
