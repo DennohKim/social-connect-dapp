@@ -1,15 +1,21 @@
 
-import SavingPoolABI from '../abi/SavingsPool.json';
+import SavingPoolABI from '../abi/ChamaPool.json';
 import ManagementABI from '../abi/ManagementContract.json';
+import SavingsPoolAbi from '../abi/SavingsPool2.json';
+import ManagementAbi from '../abi/ManagementContract2.json';
 
-export const SavingsPoolAddress ='0xF115956e6819c8c4137175119d1cf486A63BBB60'; //Deployed to: 0x93b63165Ae71422D4567a6abB39860777B8A62Dd
+export const SavingsPoolAddress = '0xf084270F6dfEA078FA0bD70cB7242F3E62305086'; //Deployed to: 0x93b63165Ae71422D4567a6abB39860777B8A62Dd
 export const SavingsPoolABI = SavingPoolABI.abi
 
-export const ManagementAddress = '0x6417D3A10177662B83e362516492772D59329C8b'; //Deployed to: 0x7897CC6E4C544679cB40Dd9Ad4BD2A414812072b
+export const ManagementAddress = '0xCD62b7FA236036c3B027c8CDfD945E3CB4907DF6'; //Deployed to: 0x7897CC6E4C544679cB40Dd9Ad4BD2A414812072b
 export const ManagementContractABI = ManagementABI.abi
 
 // forge create --rpc-url https://alfajores-forno.celo-testnet.org  --constructor-args 0x7897CC6E4C544679cB40Dd9Ad4BD2A414812072b   --private-key <key>
 //  src/SavingsPool.sol:ChamaPool
 
 export const ManagementAddress2 = '0x93b63165Ae71422D4567a6abB39860777B8A62Dd'
-export const SavingsPoolAddress2 ='0x7897CC6E4C544679cB40Dd9Ad4BD2A414812072b';
+export const SavingsPoolAddress2 = '0x7897CC6E4C544679cB40Dd9Ad4BD2A414812072b';
+
+export const SavingsPoolABI2 = SavingsPoolAbi;
+export const ManagementContractABI2 = ManagementAbi;
+

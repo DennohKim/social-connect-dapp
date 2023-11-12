@@ -13,7 +13,7 @@ async function main() {
   console.log('Management contract address:', management.address);
 
   // Deploy SavingsPool contract
-  const SavingsPool = await ethers.getContractFactory('SavingsPool');
+  const SavingsPool = await ethers.getContractFactory('ChamaPool');
   const savingsPool = await SavingsPool.deploy(management.address);
   console.log('SavingsPool contract address:', savingsPool.address);
 }

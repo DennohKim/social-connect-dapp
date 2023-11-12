@@ -7,7 +7,6 @@ import { getPoolsData } from '@/data/pools';
 
 const PoolList = () => {
 	 const [pools, setPools] = useState<Pool[]>([]);
-	 console.log(pools)
 
    useEffect(() => {
      // Here you would fetch the data from the server or generate the dummy data

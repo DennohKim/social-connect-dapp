@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.2;
+
 import "./Management.sol";
 
 interface IERC20Token {
@@ -23,321 +24,352 @@ interface IERC20Token {
     );
 }
 
-contract SavingsPool {
-    event PoolStarted(uint poolid, address _poolOwner, uint maxParticipants, uint contributions);
-    event JoinedPool(uint poolid, address _joiner);
-    event UserClaim(uint poolId, uint turnId, address _address, uint amountClaimed );
-    event UserContributed();
-   
+contract ChamaPool {
     ManagementContract mgmt;
-    address public owner;
-    uint public poolCounter;
-	address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
-
-   
-
-    //Struct storing the pool Details 
-   struct PoolDetails {
-	string  poolName;
-	string poolDescription;
-    address owner;
-    address token;
-    uint maxParticipants;
-    uint contributionPerParticipant;
-    uint durationPerTurn;
-    uint startTime;
-    uint currentTurn;
-    address [] participants;
-    mapping (address => bool) hasReceived;
-    bool isActive;
-    bool isRestrictedPool;
-   }
-
-   //Struct storing the turn details within a pool
-   struct TurnDetails {
-        uint turnBal;
-        uint endTime;
-        address currentClaimant;
+    struct Pool {
+        address owner;
+        string name;
+        address userTurnAddress;
+        uint contributionPerParticipant;
+        uint maxParticipants;
+        uint durationPerTurn;
+        uint currentTurn;
         bool active;
-        bool claimable;
-        mapping (address => uint) turnContributions;
-        mapping (address => bool) hasContributed;
-   }
-    //poolID => Turn ID => TurnDetails
-   mapping (uint =>mapping(uint => TurnDetails)) public turn;
+        address[] participants;
+        uint _poolBalance;
+        bool isRestrictedPool;
+        uint userContibutionNumber;
+        uint startTime;
+    }
+    address public owner;
+    mapping(uint => mapping(address => uint)) public balances; // Mapping to track user balances per pool.
+    mapping(uint => uint) public poolbalances;
+    mapping(uint => uint) public poolContributionbalances;
+    mapping(uint => mapping(address => bool)) public hascontributed;
+    IERC20Token token;
 
-   mapping (uint => PoolDetails) public pool;
-
-//This Stores the deposit amounts of each user in the pool
-   mapping (uint => mapping(address=> uint)) public depositAmounts;
- 
     constructor(address _mgmt) {
-        require(_mgmt != address(0),"Invalid Contract Address");
+        token = IERC20Token(cUsdTokenAddress);
+        require(_mgmt != address(0), "Invalid Contract Address");
 
         mgmt = ManagementContract(_mgmt);
         owner = msg.sender;
     }
 
-//function allows for users to create pools
-function createPool(string memory _poolName, string memory poolDescription, uint _maxParticipants, uint _contributionAmt,uint _durationPerTurn, bool _isRestricted) external {
-    require(cUsdTokenAddress != address(0), "Invalid token");
-    require (_maxParticipants!= 0,"Pool Needs a Valid number of Participants");
-    require (_contributionAmt!= 0, "Enter a valid Contribution Amount");
-    require (_durationPerTurn!= 0, "Enter a valid Duration");
-
-    uint poolID = ++poolCounter;
-    uint contributionInEth = _contributionAmt*10**18;
-    //Owner must send deposit equivalent to 2 contributions
-    IERC20Token token  = IERC20Token(cUsdTokenAddress);
-    uint deposit = _calculateDeposit(contributionInEth);
-
-
-    if(token.balanceOf(msg.sender)<deposit) revert("Not Enough Tokens For the Deposit");
-    if (token.allowance(msg.sender, address(this)) < deposit) {
-        require(token.approve(address(this), deposit), "Token approval failed");
-    }
-    token.transferFrom(msg.sender, address(this),deposit);
-    depositAmounts[poolID][msg.sender] = deposit;
-
-    PoolDetails storage startPool = pool[poolID];
-	startPool.poolName = _poolName;
-	startPool.poolDescription = poolDescription;
-    startPool.owner = msg.sender;
-    startPool.contributionPerParticipant = _contributionAmt *10**18;
-    startPool.maxParticipants = _maxParticipants;
-    startPool.durationPerTurn = _durationPerTurn;
-    startPool.token = cUsdTokenAddress;
-    startPool.participants.push(msg.sender);
-    startPool.isRestrictedPool = _isRestricted;
-    startPool.isActive = false;
-    startPool.currentTurn = 0;
-
-    emit PoolStarted(poolID, msg.sender, _maxParticipants, _contributionAmt);
-}
-
-
-//Function to join a Savings Pool
-function joinPool(uint _id) external {
-    //Check that the pool is not full
-    uint maxPPL = pool[_id].maxParticipants;
-    require(_checkParticipantCount(_id)!= maxPPL, "Pool Filled");
-
-    //check if the address joining is blacklisted
-    require(!mgmt.isBlacklisted(msg.sender), "You are blacklisted from the pool for defaulting");
-
-    PoolDetails storage _joinpool =pool[_id];
-    uint deposit = _calculateDeposit(_joinpool.contributionPerParticipant);
-
-//If the pool is restricted, Only addresses that are Friendlies of the owner can join the pool
-    if(_joinpool.isRestrictedPool){
-        address pOwner = _joinpool.owner;
-        bool status = mgmt._checkStatus(pOwner,msg.sender);
-        require(status == true, "You are not allowed in this pool");
+    struct TurnDetails {
+        uint turnBal;
+        uint endTime;
+        address currentClaimant;
+        bool active;
     }
 
+    mapping(uint => Pool) public pools;
+    mapping(uint => TurnDetails) public turn;
+    //get the round for contributing
+    /*
+     @dev getting the total number of turns perpool
+     */
+    mapping(uint => mapping(address => uint)) public totalNumberOfTurnsPerpool;
+    uint public poolCounter;
 
-    IERC20Token token = IERC20Token(cUsdTokenAddress);
-    
-    //Send the deposit
-    if(token.balanceOf(msg.sender)<deposit) revert("Not Enough Tokens For the Deposit");
-    if (token.allowance(msg.sender, address(this)) < deposit) {
-        require(token.approve(address(this), deposit), "Token approval failed");
+    address internal cUsdTokenAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
+
+       // 0xd9145CCE52D386f254917e481eB44e9943F39138; //0x78c4E798b65f1c96c4eEC6f5F93E51584593e723;
+
+    event PoolCreated(
+        uint poolId,
+        address owner,
+        string name,
+        uint maxParticipants,
+        uint contributionPerParticipant,
+        uint durationPerTurn
+    );
+    event JoinedPool(uint poolId, address participant);
+    event TurnClaimed(
+        uint poolId,
+        uint turnId,
+        address participant,
+        uint amount
+    );
+
+    function createPool(
+        string calldata name,
+        uint maxParticipants,
+        uint contributionPerParticipant,
+        uint durationPerTurn,
+        bool _isRestricted
+    ) external {
+        require(maxParticipants > 0, "Max participants must be greater than 0");
+        require(
+            contributionPerParticipant > 0,
+            "Contribution per participant must be greater than 0"
+        );
+        require(
+            durationPerTurn > 0,
+            "Duration per turn must be greater than 0"
+        );
+        require(
+            token.transferFrom(
+                msg.sender,
+                address(this),
+                (contributionPerParticipant * 2)
+            ),
+            "Top Up Your account"
+        );
+        uint _poolID = poolCounter;
+
+        address[] memory initialParticipants = new address[](1);
+        initialParticipants[0] = msg.sender; // Add the owner as the initial participant.
+        uint poolBalance = contributionPerParticipant * 2;
+        poolbalances[_poolID] += poolBalance;
+        poolContributionbalances[_poolID] += poolBalance;
+        pools[_poolID] = Pool(
+            msg.sender,
+            name,
+            msg.sender,
+            contributionPerParticipant,
+            maxParticipants,
+            durationPerTurn,
+            0,
+            false,
+            initialParticipants,
+            poolBalance,
+            _isRestricted,
+            0,
+            0
+        );
+
+        emit PoolCreated(
+            _poolID,
+            msg.sender,
+            name,
+            maxParticipants,
+            contributionPerParticipant,
+            durationPerTurn
+        );
+
+        poolCounter++; //poolId, owner, name, maxParticipants, contributionPerParticipant, durationPerTurn, tokenAddress);
     }
-    token.transferFrom(msg.sender, address(this),deposit);
-    depositAmounts[_id][msg.sender] = deposit;
 
-
-    //Once  Deposit is sent, add address to the array of participants
-    _joinpool.participants.push(msg.sender);
-    
-    //Check if with this addition, pool is full. Start Pool if it is.
-    if(_joinpool.participants.length == maxPPL){
-        _joinpool.isActive = true;
-        _joinpool.startTime =block.timestamp;
-        _joinpool.currentTurn++;
-        _setTurnDetails(_id);
-
-    }
-
-    emit JoinedPool(_id, msg.sender);    
-}
-
-//External Function that allows a user to contribute to the pool
-function contributeToPool(uint _poolID)  external {
-    require(_isParticipant(_poolID,msg.sender), "Not a participant in this pool");
-    
-    uint _amount = pool[_poolID].contributionPerParticipant;
-
-    uint turnId = pool[_poolID].currentTurn;
-
-    require(turn[_poolID][turnId].hasContributed[msg.sender] == false, "User has already contributed to this turn");
-
-    _contribute(_poolID, turnId, _amount); 
-
-    _updateTurn(_poolID);
-}
-
-function claimTurn(uint _poolID) external {
-    // Check that the msg sender is part of the pool
-    require(_isParticipant(_poolID, msg.sender), "Not a participant in this pool");
-
-    // Get the current turn in the pool
-    uint currentTurn = pool[_poolID].currentTurn;
-
-    // Check if the beneficiary of the turn is the msg sender
-    address beneficiary = turn[_poolID][currentTurn].currentClaimant;
-    require(beneficiary == msg.sender, "It's not your turn to claim");
-
-    // Check if there is a balance deposit, and refill it
-    uint deposit = depositAmounts[_poolID][msg.sender];
-    uint contributionAmt = pool[_poolID].contributionPerParticipant;
-    uint expectedDep = contributionAmt*2;
-    uint bal;
-   
-    if(deposit<expectedDep){
-    // Refill the deposit with the claimant's amount
-    bal = expectedDep-deposit;
-    depositAmounts[_poolID][msg.sender] += bal;
-    turn[_poolID][currentTurn].turnBal -= bal;
-    }
-
-    // Send remaining tokens to msg sender
-    IERC20Token token = IERC20Token(cUsdTokenAddress);
-    uint remainingTokens = turn[_poolID][currentTurn].turnBal;
-
-    // Transfer remaining tokens to the claimant
-    if (remainingTokens > 0) {
-        token.transfer(msg.sender, remainingTokens);
-    }
-
-    // Mark the turn as claimed
-    turn[_poolID][currentTurn].active = false;
-         emit UserClaim(_poolID,currentTurn,msg.sender, bal );
-
-    // If the claimant is the last recipient, set the pool to not active
-    if (currentTurn == pool[_poolID].participants.length) {
-        pool[_poolID].isActive = false;
-        // Return deposits to participants
-        _returnDeposits(_poolID);
-    }
-   
-    _updateTurn(_poolID);
-}
-
-
-
-//Owner can destroy the Pool, ONLY IF the Pool is not yet active
-//function here
-
-
-
-//In the case where the pool is closed or ended, deposits are returned
-
-
-
-//We check the number of participants in so many functions, so we have it as an internal function
-function _checkParticipantCount(uint _id) public view returns (uint) {
-    uint count  = pool[_id].participants.length;
-
-    return count;
-}
-
-function _isParticipant(uint _poolID, address _address) public view returns(bool){
-    PoolDetails storage _pooldetails = pool[_poolID];
-    uint participants = _checkParticipantCount(_poolID);
-
-    for(uint i = 0; i<participants;){
-        address participant = _pooldetails.participants[i];
-        if(participant == _address){
-            return true;
-        } unchecked {
-            i++;
+    function joinPool(uint poolId) external {
+        require(poolId < poolCounter, "Invalid pool ID");
+        Pool storage pool = pools[poolId];
+        require(pool.active == false, "Pool is already active");
+        uint amount = pool.contributionPerParticipant * 2;
+        //require(token.balanceOf(msg.sender) > pool.contributionPerParticipant * 2, "Contribution amount must be twice the amount per participant");
+        require(
+            mgmt.isBlacklisted(msg.sender) == false,
+            "You are blacklisted from the pool for defaulting"
+        );
+        //If the pool is restricted, Only addresses that are Friendlies of the owner can join the pool
+        if (pool.isRestrictedPool) {
+            address pOwner = pool.owner;
+            bool status = mgmt._checkStatus(pOwner, msg.sender);
+            require(status == true, "You are not allowed in this pool");
         }
+        token.transferFrom(msg.sender, address(this), amount);
+        pool.participants.push(msg.sender);
+        balances[poolId][msg.sender] += amount;
+        poolContributionbalances[poolId] += amount;
+        pool._poolBalance += amount;
+        poolbalances[poolId] += amount;
 
-    }
-    return false;
-    
-}
-//internal functions
-function _contribute( uint _poolId,uint _turnId,uint _amount) internal {
-    IERC20Token token  = IERC20Token(cUsdTokenAddress);
-    if(token.balanceOf(msg.sender)<_amount) revert("Not Enough Tokens For the Deposit");
-    if (token.allowance(msg.sender, address(this)) < _amount) {
-        require(token.approve(address(this), _amount), "Token approval failed");
-    }
-    token.transferFrom(msg.sender, address(this),_amount);
+        emit JoinedPool(poolId, msg.sender);
 
-    turn[_poolId][_turnId].turnBal+=_amount;
-    turn[_poolId][_turnId].turnContributions[msg.sender]=_amount;
-    turn[_poolId][_turnId].hasContributed[msg.sender] = true;
-}
-
-function _setTurnDetails(uint _poolId) internal {
-     //set the address to receive, endtime and activity
-     PoolDetails storage thisPool = pool[_poolId];
-     uint turnId = thisPool.currentTurn ;
-     uint timePerTurn = thisPool.durationPerTurn;
-     address turnBenefactor = thisPool.participants[turnId-1];
-
-     TurnDetails storage thisTurn = turn[_poolId][turnId];
-     thisTurn.currentClaimant = turnBenefactor;
-     thisTurn.endTime = block.timestamp+timePerTurn;
-     thisTurn.active = true;
-
-
-}
-function _updateTurn(uint _poolId) internal {
-
-     PoolDetails storage thisPool = pool[_poolId];
-     address []  memory _addresses = thisPool.participants;
-     uint participantNo = _addresses.length;
-     uint turnId =  thisPool.currentTurn;
-     if(turn[_poolId][turnId].endTime < block.timestamp){
-    for (uint i = 0; i < participantNo;) {
-        address current = _addresses[i];
-
-        //use deposit if they have the deposits
-        if(!turn[_poolId][turnId].hasContributed[current] && 
-        depositAmounts[_poolId][current]>= thisPool.contributionPerParticipant ){
-            _useDeposit(_poolId, turnId, current);
-        }else if(!turn[_poolId][turnId].hasContributed[current] && 
-        depositAmounts[_poolId][current] < thisPool.contributionPerParticipant){
-            //If both deposits are used, address is blacklisted from participating again
-            mgmt.blacklistAddress(current);
+        if (pool.participants.length == pool.maxParticipants) {
+            // Activate the pool if the maximum number of participants is reached.
+            uint _endTime = block.timestamp + pool.durationPerTurn;
+            address currentClaimant = pool.participants[pool.currentTurn];
+            turn[poolId] = TurnDetails(
+                poolbalances[poolId],
+                _endTime,
+                currentClaimant,
+                false
+            );
+            pool.active = true;
+            pool.startTime = block.timestamp;
         }
     }
-    thisPool.currentTurn++;
-     _setTurnDetails(_poolId);
-     }
 
-}
-function _useDeposit(uint _poolId,uint _turnId, address _address) internal{
-//A deposit is used as the contribution amount
-    uint _contributionAmt = pool[_poolId].contributionPerParticipant;
-    depositAmounts[_poolId][_address]-=_contributionAmt;
-    turn[_poolId][_turnId].turnBal+=_contributionAmt;
-    
-}
+    //check if is participant of a pool
 
+    function isParticipantOfPool(
+        uint poolId,
+        address user
+    ) internal view returns (bool) {
+        require(poolId < poolCounter, "Invalid pool ID");
+        Pool storage pool = pools[poolId];
 
-function _returnDeposits(uint _poolID) internal {
-    uint _recipients = _checkParticipantCount(_poolID);
-    IERC20Token token  = IERC20Token(cUsdTokenAddress);
-
-    for(uint i = 0; i < _recipients-1;){
-        address receiver = pool[_poolID].participants[i];
-        uint depositBal = depositAmounts[_poolID][receiver];
-        if(depositBal!=0){
-        token.transferFrom(address(this), receiver, depositBal);
+        for (uint i = 0; i < pool.participants.length; i++) {
+            if (pool.participants[i] == user) {
+                return true; // User is a participant of the pool.
+            }
         }
-    unchecked {
-        i++;
-        }
+
+        return false; // User is not a participant of the pool.
     }
-}
 
-function _calculateDeposit(uint _amount) internal pure returns (uint){
-        return _amount*2;
-}
+    //contribute
+    function contributeToPool(uint _poolID) external {
+        require(
+            isParticipantOfPool(_poolID, msg.sender),
+            "Not a participant in this pool"
+        );
+        Pool storage pool = pools[_poolID];
 
+        require(
+            totalNumberOfTurnsPerpool[_poolID][msg.sender] <
+                pool.participants.length,
+            "done with the round"
+        );
+        uint _amount = pools[_poolID].contributionPerParticipant;
+        if (pools[_poolID].participants.length == pools[_poolID].currentTurn) {
+            require(
+                hascontributed[_poolID][msg.sender] == false,
+                "done with the round"
+            );
+        }
+
+        _contributeToPool(_poolID, _amount);
+
+        // _updateTurn(_poolID);
+    }
+
+    //function return deposits
+    function withdrawDepositFromPool(uint _poolId) public {
+        require(_poolId < poolCounter, "Invalid pool ID");
+        _returnDeposits(_poolId);
+    }
+
+    function _returnDeposits(uint _poolId) internal {
+        require(
+            pools[_poolId]._poolBalance <= poolbalances[_poolId],
+            "not all have claimed"
+        );
+        for (uint i = 0; i < pools[_poolId].participants.length; i++) {
+            address participant = pools[_poolId].participants[i];
+            uint balance = balances[_poolId][participant];
+            token.transfer(msg.sender, balance);
+            balances[_poolId][participant] = 0;
+        }
+
+        pools[_poolId]._poolBalance = 0;
+        poolbalances[_poolId] = 0;
+    }
+
+    function _contributeToPool(uint poolId, uint _amount) internal {
+        require(poolId < poolCounter, "Invalid pool ID");
+        Pool storage pool = pools[poolId];
+        require(pool.active, "Pool is not active");
+
+        require(
+            _amount == pool.contributionPerParticipant,
+            "Contribution amount must match the specified amount per participant"
+        );
+
+        // Update the user's balance within this pool.
+        token.transferFrom(msg.sender, address(this), _amount);
+        balances[poolId][msg.sender] += _amount;
+        poolbalances[poolId] += _amount;
+        pool._poolBalance += _amount;
+        hascontributed[poolId][msg.sender] = true;
+        totalNumberOfTurnsPerpool[poolId][msg.sender] += 1;
+    }
+
+    //claim pool
+    function claimTurn(uint poolId) external {
+        require(poolId < poolCounter, "Invalid pool ID");
+        Pool storage pool = pools[poolId];
+        require(pool.active, "Pool is not active");
+        require(
+            isParticipantOfPool(poolId, msg.sender),
+            "You are not a participant of this pool"
+        );
+
+        address currentClaimant = pool.participants[pool.currentTurn];
+
+        require(currentClaimant == msg.sender, "It's not your turn to claim");
+        require(
+            pool.currentTurn != pool.participants.length,
+            "done with the round"
+        );
+        require(turn[poolId].endTime <= block.timestamp, "waitfor turn to end");
+        // Transfer the turn balance to the claimant.
+        uint amountToTransfer = poolbalances[poolId] -
+            poolContributionbalances[poolId];
+        token.transfer(msg.sender, amountToTransfer);
+        poolbalances[poolId] -= amountToTransfer;
+        pool._poolBalance -= amountToTransfer;
+
+        // Update the turn details.
+        pool.currentTurn += 1;
+        pool.userTurnAddress = pool.participants[pool.currentTurn];
+
+        uint _time = block.timestamp + pool.durationPerTurn;
+        _updateTurn(poolId, _time, msg.sender);
+        // Increment the turn counter for the next participant.
+        pool.userContibutionNumber += 1;
+
+        emit TurnClaimed(
+            poolId,
+            pool.currentTurn,
+            msg.sender,
+            amountToTransfer
+        );
+    }
+
+    //update turn
+    function _updateTurn(uint _poolId, uint time, address user) internal {
+        balances[_poolId][msg.sender] = 0;
+
+        turn[_poolId].endTime = time;
+        turn[_poolId].currentClaimant = user;
+    }
+
+    //getall
+    function getOwnerSavingPools(
+        address ownerAddress
+    ) public view returns (Pool[] memory) {
+        uint ownedPoolsCount = 0;
+
+        // Count the number of pools owned by the specified address
+        for (uint i = 0; i <= poolCounter; i++) {
+            if (pools[i].owner == ownerAddress) {
+                ownedPoolsCount++;
+            }
+        }
+
+        // Create an array to store owned pools
+        Pool[] memory ownedPools = new Pool[](ownedPoolsCount);
+        uint currentIndex = 0;
+
+        // Populate the array with owned pools
+        for (uint i = 0; i <= poolCounter; i++) {
+            if (pools[i].owner == ownerAddress) {
+                ownedPools[currentIndex] = pools[i];
+                currentIndex++;
+            }
+        }
+
+        return ownedPools;
+    }
+
+    // Modify the original getAllSavingPools to return all pools
+    function getAllSavingPools() public view returns (Pool[] memory) {
+        Pool[] memory result = new Pool[](poolCounter);
+
+        for (uint i = 1; i <= poolCounter; i++) {
+            result[i - 1] = pools[i];
+        }
+
+        return result;
+    }
+
+    //getTurns
+    function getTurnDetails(
+        uint poolId
+    ) external view returns (TurnDetails memory) {
+        require(poolId < poolCounter, "Invalid pool ID");
+        return turn[poolId];
+    }
 }

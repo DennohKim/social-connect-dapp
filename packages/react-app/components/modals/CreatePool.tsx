@@ -6,6 +6,7 @@ import { useContractSend } from '@/hooks/useContractWrite';
 import { waitForTransaction } from '@wagmi/core';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { useContractApprove } from '@/hooks/useApprove';
 
 const CreatePoolForm = () => {
   const { address } = useAccount();
@@ -13,82 +14,93 @@ const CreatePoolForm = () => {
   const router = useRouter();
 
   const [visible, setVisible] = useState(false);
-  const [celodevName, setCelodevName] = useState('');
-  const [celodevWalletAddress, setCelodevWalletAddress] = useState<string>('');
-  const [celodevPaymentCurrency, setCelodevPaymentCurrency] = useState('');
-  const [celodevTaskDescription, setCelodevTaskDescription] = useState('');
-  const [celodevRewardAmount, setCelodevRewardAmount] = useState<
+  const [poolName, setPoolName] = useState<string>('');
+  const [maxParticipants, setMaxParticipants] = useState<string | number>(0);
+  const [contributionPerParticipant, setContributionPerParticipant] = useState<
     string | number
   >(0);
+  const [isRestricted, setIsRestricted] = useState<boolean>(false);
+  const [durationPerTurn, setDurationPerTurn] = useState<string | number>(0);
 
-  const [debouncedCelodevName] = useDebounce(celodevName, 500);
-  const [debouncedCelodevWalletAddress] = useDebounce(
-    celodevWalletAddress,
+  const [debouncedPoolName] = useDebounce(poolName, 500);
+  const [debouncedMaxParticipants] = useDebounce(Number(maxParticipants), 500);
+  const [debouncedContributionPerParticipant] = useDebounce(
+    Number(contributionPerParticipant),
     500
   );
-  const [debouncedCelodevPaymentCurrency] = useDebounce(
-    celodevPaymentCurrency,
-    500
-  );
-  const [debouncedCelodevTaskDescription] = useDebounce(
-    celodevTaskDescription,
-    500
-  );
-  const [debouncedCelodevRewardAmount] = useDebounce(celodevRewardAmount, 500);
+  const [debouncedIsRestricted] = useDebounce(isRestricted, 500);
+  const [debouncedDurationPerTurn] = useDebounce(Number(durationPerTurn), 500);
   const [loading, setLoading] = useState('');
 
   const isComplete =
-    celodevName &&
-    celodevRewardAmount &&
-    celodevWalletAddress &&
-    celodevPaymentCurrency &&
-    celodevTaskDescription;
+    poolName &&
+    durationPerTurn &&
+    maxParticipants &&
+    contributionPerParticipant &&
+    isRestricted;
 
   const clearForm = () => {
-    setCelodevName('');
-    setCelodevRewardAmount(0);
-    setCelodevWalletAddress('');
-    setCelodevTaskDescription('');
-    setCelodevPaymentCurrency('');
+    setPoolName('');
+    setDurationPerTurn(0);
+    setMaxParticipants(0);
+    setIsRestricted(false);
+    setContributionPerParticipant(0);
   };
 
-  const CelodevRewardAmountInWei = ethers.utils.parseEther(
-    `${debouncedCelodevRewardAmount.toString() || 0}`
-  );
+  const { writeAsync: approveSpending, isLoading: approveLoading } =
+    useContractApprove(debouncedContributionPerParticipant);
 
-  const { writeAsync: createCelodev } = useContractSend(
-    'captureCelodevDetails',
+  const { writeAsync: createPool, error: createPoolError } = useContractSend(
+    'createPool',
     [
-      debouncedCelodevName,
-      debouncedCelodevWalletAddress,
-      debouncedCelodevPaymentCurrency,
-      debouncedCelodevTaskDescription,
-      CelodevRewardAmountInWei,
-      address,
+      debouncedPoolName,
+      debouncedMaxParticipants,
+      debouncedContributionPerParticipant,
+      debouncedDurationPerTurn,
+      debouncedIsRestricted,
     ]
   );
 
-  const handleCreateCelodev = async () => {
-    if (!createCelodev) {
-      throw 'Failed to create Celodev';
+
+  const handleCreatePool = async () => {
+    if (!createPool || !approveSpending) {
+      throw 'Failed to create Savings Pool or approve spending';
     }
+    setLoading(
+      approveLoading
+        ? 'Approving spending...'
+        : 'Waiting for spending approval...'
+    );
+    //    if (!isComplete) throw new Error('Please fill all fields');
+
+    // console.log('Pool Name:', debouncedPoolName);
+    // console.log('Max Participants:', debouncedMaxParticipants);
+    // console.log(
+    //   'Contribution Per Participant:',
+    //   debouncedContributionPerParticipant
+    // );
+    // console.log('Is Restricted:', debouncedIsRestricted);
+    // console.log('Duration Per Turn:', debouncedDurationPerTurn);
+
+    const {hash: approveHash} = await approveSpending();
+    await waitForTransaction({ confirmations: 1, hash: approveHash });
+
     setLoading('Creating...');
-    if (!isComplete) throw new Error('Please fill all fields');
-    const { hash: approveHash } = await createCelodev();
+    const { hash: createHash } = await createPool();
     setLoading('Waiting for confirmation...');
 
-    await waitForTransaction({ confirmations: 1, hash: approveHash });
+    await waitForTransaction({ confirmations: 1, hash: createHash });
 
     setVisible(false);
     clearForm();
   };
 
-  const addCelodev = async (e: any) => {
+  const addSavingsPool = async (e: any) => {
     e.preventDefault();
     try {
-      await toast.promise(handleCreateCelodev(), {
-        loading: 'Creating Celodev...',
-        success: 'Celodev created successfully',
+      await toast.promise(handleCreatePool(), {
+        loading: 'Creating Savings Pool...',
+        success: 'Savings Pool created successfully',
         error: 'Something went wrong. Try again.',
       });
       setTimeout(() => {
@@ -118,10 +130,10 @@ const CreatePoolForm = () => {
         {/* Modal */}
         {visible && (
           <div
-            className='fixed z-40 overflow-y-auto top-0 w-full left-0'
+            className='fixed z-40 overflow-y-auto top-0 w-full left-0 flex items-center justify-center'
             id='modal'
           >
-            <form onSubmit={addCelodev}>
+            <form onSubmit={addSavingsPool}>
               <div className='flex items-center justify-center min-height-100vh pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
                 <div className='fixed inset-0 transition-opacity'>
                   <div className='absolute inset-0 bg-gray-900 opacity-75' />
@@ -140,7 +152,7 @@ const CreatePoolForm = () => {
                       <label>Pool Name</label>
                       <input
                         onChange={(e) => {
-                          setCelodevName(e.target.value);
+                          setPoolName(e.target.value);
                         }}
                         required
                         type='text'
@@ -148,24 +160,13 @@ const CreatePoolForm = () => {
                       />
                     </div>
                     <div>
-                      <label>Pool Description</label>
+                      <label>Maximum No. of Participants</label>
                       <input
                         onChange={(e) => {
-                          setCelodevWalletAddress(e.target.value);
+                          setMaxParticipants(e.target.value);
                         }}
                         required
-                        type='text'
-                        className='w-full bg-gray-100 p-2 mt-2 mb-3'
-                      />
-                    </div>
-                    <div>
-                      <label>Maximum No. of Participant</label>
-                      <input
-                        onChange={(e) => {
-                          setCelodevWalletAddress(e.target.value);
-                        }}
-                        required
-                        type='text'
+                        type='number'
                         className='w-full bg-gray-100 p-2 mt-2 mb-3'
                       />
                     </div>
@@ -173,61 +174,67 @@ const CreatePoolForm = () => {
                       <label>Contribution Amount</label>
                       <input
                         onChange={(e) => {
-                          setCelodevWalletAddress(e.target.value);
+                          setContributionPerParticipant(e.target.value);
                         }}
                         required
-                        type='text'
+                        type='number'
                         className='w-full bg-gray-100 p-2 mt-2 mb-3'
                       />
                     </div>
 
                     <div className='flex flex-col space-y-1'>
                       <label>Duration per turn</label>
-                      <select
-                        value={celodevPaymentCurrency}
+                      <input
+                        type='number'
                         onChange={(e) => {
-                          setCelodevPaymentCurrency(e.target.value);
+                          setDurationPerTurn(e.target.value);
                         }}
                         className='py-2.5'
-                      >
-                        <option defaultValue='Duration in weeks'>
-                          Duration in weeks
-                        </option>
-                        <option value='1 week'>1</option>
-                        <option value='2 weeks'>2</option>
-                        <option value='3 weeks'>3</option>
-                        <option value='4 weeks'>4</option>
-                        <option value='5 weeks'>5</option>
-                      </select>
+                      />
                     </div>
-                    <div className='flex flex-col space-y-1'>
+
+                    <div className='flex flex-col space-y-1 pt-3'>
                       <label>Restrictions</label>
-                      <select
-                        value={celodevPaymentCurrency}
-                        onChange={(e) => {
-                          setCelodevPaymentCurrency(e.target.value);
-                        }}
-                        className='py-2.5'
-                      >
-                        <option defaultValue=' Select restriction status'>
-                          Select restriction status
-                        </option>
-                        <option value='true'>True</option>
-                        <option value='false'>False</option>
-                      </select>
+
+                      <div className='flex space-x-6'>
+                        <div className='flex items-center space-x-2'>
+                          <input
+                            type='radio'
+                            value='true'
+                            checked={isRestricted === true}
+                            onChange={(e) => {
+                              setIsRestricted(e.target.value === 'true');
+                            }}
+                          />
+                          <label>True</label>
+                        </div>
+                        <div className='flex items-center space-x-2'>
+                          <input
+                            type='radio'
+                            value='false'
+                            className=''
+                            checked={isRestricted === false}
+                            onChange={(e) => {
+                              setIsRestricted(e.target.value === 'true');
+                            }}
+                          />
+                          <label>False</label>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className='bg-gray-200 px-4 py-3 text-right'>
                     <button
                       type='button'
-                      className='py-2 px-4 bg-gray-500 text-white rounded hover:bg-gray-700 mr-2'
+                      className='py-2 px-4 bg-red-500 text-white rounded hover:bg-red-700 mr-2'
                       onClick={() => setVisible(false)}
                     >
                       Cancel
                     </button>
                     <button
                       type='submit'
-                      disabled={!!loading || !isComplete || !createCelodev}
+                        disabled={!!loading || !createPool}
+
                       className='py-2 px-4 bg-primary text-white rounded hover:primary mr-2'
                     >
                       {loading ? loading : 'Create'}
