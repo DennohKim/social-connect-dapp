@@ -31,8 +31,6 @@ const PoolDetails = () => {
     functionName: 'getAllSavingPools',
   });
 
-  console.log('poolsData', typeof savingsPool);
-
 
 useEffect(() => {
   if (savingsPool && poolID) {
@@ -41,8 +39,8 @@ useEffect(() => {
           (pool: PoolDetails) => Number(pool.poolID) === Number(poolID)
         )
       : null;
+	  console.log(pool)
 
-	  console.log("pool", pool)
     setSelectedPool(pool);
   }
 }, [savingsPool, poolID]);
@@ -80,8 +78,8 @@ useEffect(() => {
                   <div
                     className={`text-sm font-semibold ${
                       selectedPool.isRestrictedPool
-                        ? 'text-red-600'
-                        : 'text-green-600'
+                        ? 'text-red-600 bg-red-500/25 p-3 rounded-md'
+                        : 'text-green-400 bg-green-500/25 p-3 rounded-md'
                     }`}
                   >
                     {selectedPool.isRestrictedPool
@@ -164,23 +162,21 @@ useEffect(() => {
                     <p className='font-semibold'>Participant</p>
                     {/* <p className='font-semibold self-end'>Has Received</p> */}
                   </div>
-                  {(selectedPool.participants).map(
-                    (participant, index) => (
-                      <div
-                        key={`participant-${index}`}
-                        className='flex justify-between  w-full'
-                      >
-                        <p>{truncateAddr(participant)}</p>
-                        {/* <p
+                  {selectedPool.participants.map((participant, index) => (
+                    <div
+                      key={`participant-${index}`}
+                      className='flex justify-between  w-full'
+                    >
+                      <p>{truncateAddr(participant)}</p>
+                      {/* <p
                           className={
                             hasReceived ? 'text-green-500' : 'text-red-500'
                           }
                         >
                           {hasReceived ? 'Yes' : 'No'}
                         </p> */}
-                      </div>
-                    )
-                  )}
+                    </div>
+                  ))}
                 </div>{' '}
               </div>
             </div>
@@ -231,15 +227,15 @@ useEffect(() => {
         <Card>
           <CardContent>
             <div className='flex flex-col w-full py-4'>
-              {selectedPool.participants.includes(address as `0x${string}`) ? (
+              {selectedPool.userTurnAddress === address ? (
                 <form className='flex flex-col space-y-1'>
                   <div>
-                    <Label>Contribution Amount</Label>
+                    <Label>You can claim this turn</Label>
                     <Input type='number' placeholder='Amount in cUSD' />
                   </div>
 
                   <Button className='' variant='default'>
-                    Contribute
+                    Claim Turn
                   </Button>
                 </form>
               ) : (
