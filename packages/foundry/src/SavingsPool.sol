@@ -40,6 +40,7 @@ contract ChamaPool {
         bool isRestrictedPool;
         uint userContibutionNumber;
         uint startTime;
+        uint poolID;
     }
     address public owner;
     mapping(uint => mapping(address => uint)) public balances; // Mapping to track user balances per pool.
@@ -134,7 +135,8 @@ contract ChamaPool {
             poolBalance,
             _isRestricted,
             0,
-            0
+            0,
+            _poolID 
         );
 
         emit PoolCreated(
