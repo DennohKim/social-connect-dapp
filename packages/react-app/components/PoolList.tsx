@@ -1,26 +1,41 @@
-import { Pool } from '@/interfaces/types';
+import { Pool, PoolDetails } from '@/interfaces/types';
 import { generateDummyData } from '@/lib/data';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { PoolCard } from './PoolCard';
 import { getPoolsData } from '@/data/pools';
-
+import { useContractRead } from 'wagmi';
+import { SavingsPoolABI2, SavingsPoolAddress2 } from '@/constants/constants';
 
 const PoolList = () => {
-	 const [pools, setPools] = useState<Pool[]>([]);
+   const [pools, setPools] = useState<PoolDetails[]>([]);
 
-   useEffect(() => {
-     // Here you would fetch the data from the server or generate the dummy data
-     const data = getPoolsData(); // assuming this function is available and returns the dummy data
-     setPools(data);
-   }, []);
+  const {
+    data: savingsPool,
+    isError,
+    isLoading,
+  } = useContractRead({
+    address: SavingsPoolAddress2,
+    abi: SavingsPoolABI2,
+    functionName: 'getAllSavingPools',
+  });
+
+  console.log('poolsData', typeof savingsPool);
+
+ 
 
   return (
-    <div>
-      {pools.map((pool, index) => (
-        <PoolCard key={index} pool={pool} />
-      ))}
-    </div>
+    <>
+      {isLoading ? (
+        <p>Data Loading...</p>
+      ) : Array.isArray(savingsPool) ? (
+        savingsPool.map((pool: PoolDetails) => (
+          <PoolCard key={pool.poolID} pool={pool} />
+        ))
+      ) : (
+        <p>No data available</p>
+      )}
+    </>
   );
-}
+};
 
-export default PoolList
+export default PoolList;

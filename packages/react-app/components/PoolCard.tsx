@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { ethers } from 'ethers';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -9,22 +10,27 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Pool } from '@/interfaces/types';
+import { Pool, PoolDetails } from '@/interfaces/types';
 import { truncateAddr } from '@/lib/utils';
 import { poll } from 'ethers/lib/utils';
 import Link from 'next/link';
 
 interface PoolCardProps {
-  pool: Pool;
+  pool: PoolDetails;
 }
 
 export function PoolCard({ pool }: PoolCardProps) {
+
+	console.log(pool);
+
+
+
   return (
-    <Link href={`/${pool.poolID}`}>
+    <Link href={`/${Number(pool.poolID)}`}>
       <Card className='w-full my-4'>
         <CardHeader>
-          <CardTitle>{pool.poolName}</CardTitle>
-          <CardDescription>{pool.poolDescription}</CardDescription>
+          <CardTitle>{pool.name}</CardTitle>
+          {/* <CardDescription>{pool.poolDescription}</CardDescription> */}
         </CardHeader>
         <CardContent>
           <div className='grid w-full items-center gap-4'>
@@ -47,13 +53,13 @@ export function PoolCard({ pool }: PoolCardProps) {
             <div className='flex justify-between items-center'>
               <div className='flex flex-col space-y-1.5'>
                 <h2 className='font-semibold text-sm'>Max Participants</h2>
-                <h2 className='font-normal '>{pool.maxParticipants}</h2>
+                <h2 className='font-normal '>{Number(pool.maxParticipants)}</h2>
               </div>
               <div className='flex flex-col space-y-1.5'>
                 <h2 className='font-semibold text-sm'>Contribution Amount</h2>
                 <h2 className='font-normal self-end'>
                   {' '}
-                  {pool.contributionPerParticipant} cUSD
+                  {ethers.utils.formatEther(pool.contributionPerParticipant)} cUSD
                 </h2>
               </div>{' '}
             </div>
@@ -62,15 +68,15 @@ export function PoolCard({ pool }: PoolCardProps) {
                 <h2 className='font-semibold text-sm'>Status</h2>
                 <div
                   className={`text-sm font-semibold ${
-                    pool.isActive ? 'text-red-600' : 'text-green-600'
+                    pool.active ? 'text-red-600' : 'text-green-600'
                   }`}
                 >
-                  {pool.isActive ? 'Inactive' : 'Active'}
+                  {pool.active ? 'Inactive' : 'Active'}
                 </div>{' '}
               </div>
               <div className='flex flex-col space-y-1.5'>
                 <h2 className='font-semibold text-sm'>Duration Per Turn</h2>
-                <h2 className='font-normal self-end'>{pool.durationPerTurn}</h2>
+                <h2 className='font-normal self-end'>{Number(pool.durationPerTurn)}</h2>
               </div>
             </div>
           </div>

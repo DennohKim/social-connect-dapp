@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Pool } from '@/interfaces/types';
+import { Pool, PoolDetails } from '@/interfaces/types';
 import { getPoolsData } from '@/data/pools';
 import { convertBlockTimestampToDate, truncateAddr } from '@/lib/utils';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAccount } from 'wagmi';
+import { useAccount, useContractRead } from 'wagmi';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { SavingsPoolABI2, SavingsPoolAddress2 } from '@/constants/constants';
+import { ethers } from 'ethers';
 
 const PoolDetails = () => {
   const router = useRouter();
@@ -16,21 +18,35 @@ const PoolDetails = () => {
 
   const { poolID } = router.query;
 
-  const [pools, setPools] = useState<Pool[]>([]);
-  const [selectedPool, setSelectedPool] = useState<Pool>();
 
-  useEffect(() => {
-    // Here you would fetch the data from the server or generate the dummy data
-    const data = getPoolsData(); // assuming this function is available and returns the dummy data
-    setPools(data);
-  }, []);
+  const [selectedPool, setSelectedPool] = useState<PoolDetails>();
 
-  useEffect(() => {
-    if (pools.length > 0) {
-      const pool = pools.find((pool) => pool.poolID === Number(poolID));
-      setSelectedPool(pool);
-    }
-  }, [pools, poolID]);
+  const {
+    data: savingsPool,
+    isError,
+    isLoading,
+  } = useContractRead({
+    address: SavingsPoolAddress2,
+    abi: SavingsPoolABI2,
+    functionName: 'getAllSavingPools',
+  });
+
+  console.log('poolsData', typeof savingsPool);
+
+
+useEffect(() => {
+  if (savingsPool && poolID) {
+    const pool = Array.isArray(savingsPool)
+      ? savingsPool.find(
+          (pool: PoolDetails) => Number(pool.poolID) === Number(poolID)
+        )
+      : null;
+
+	  console.log("pool", pool)
+    setSelectedPool(pool);
+  }
+}, [savingsPool, poolID]);
+
 
   if (!selectedPool) {
     return <div>Pool not found</div>;
@@ -40,8 +56,7 @@ const PoolDetails = () => {
     <>
       <div className='flex flex-col space-y-3'>
         <div className='flex flex-col '>
-          <h1 className='font-bold text-2xl'>{selectedPool.poolName}</h1>
-          <p>{selectedPool.poolDescription}</p>
+          <h1 className='font-bold text-2xl'>{selectedPool.name}</h1>
         </div>
         <div className='flex flex-col '>
           <h1>
@@ -79,7 +94,7 @@ const PoolDetails = () => {
                 <div className='flex flex-col space-y-1'>
                   <h2 className='font-semibold text-sm'>Max Participants</h2>
                   <h2 className='font-normal '>
-                    {selectedPool.maxParticipants}
+                    {Number(selectedPool.maxParticipants)}
                   </h2>
                 </div>
                 <div className='flex flex-col space-y-1'>
@@ -88,7 +103,10 @@ const PoolDetails = () => {
                   </h2>
                   <h2 className='font-normal self-end'>
                     {' '}
-                    {selectedPool.contributionPerParticipant} cUSD
+                    {ethers.utils.formatEther(
+                      selectedPool.contributionPerParticipant
+                    )}{' '}
+                    cUSD
                   </h2>
                 </div>{' '}
               </div>
@@ -97,14 +115,17 @@ const PoolDetails = () => {
                   <h2 className='font-semibold text-sm self-end'>
                     Current Turn
                   </h2>
-                  <h2 className='font-normal'> {selectedPool.currentTurn}</h2>
+                  <h2 className='font-normal'>
+                    {' '}
+                    {Number(selectedPool.currentTurn)}
+                  </h2>
                 </div>{' '}
                 <div className='flex flex-col space-y-1'>
                   <h2 className='font-semibold text-sm self-end'>
                     Duration Per Turn
                   </h2>
                   <h2 className='font-normal self-end'>
-                    {selectedPool.durationPerTurn}
+                    {Number(selectedPool.durationPerTurn)}
                   </h2>
                 </div>
               </div>
@@ -112,17 +133,17 @@ const PoolDetails = () => {
                 <div className='flex flex-col space-y-1'>
                   <h2 className='font-semibold text-sm'>Start Date</h2>
                   <h2 className='font-normal '>
-                    {convertBlockTimestampToDate(selectedPool.startTime)}
+                    {/* {convertBlockTimestampToDate(selectedPool.startTime)} */}
                   </h2>
                 </div>
                 <div className='flex flex-col space-y-1'>
                   <h2 className='font-semibold text-sm self-end'>Status</h2>
                   <div
                     className={`text-sm font-semibold ${
-                      selectedPool.isActive ? 'text-red-600' : 'text-green-600'
+                      selectedPool.active ? 'text-red-600' : 'text-green-600'
                     }`}
                   >
-                    {selectedPool.isActive ? 'Inactive' : 'Active'}
+                    {selectedPool.active ? 'Inactive' : 'Active'}
                   </div>{' '}
                 </div>
               </div>
@@ -141,22 +162,22 @@ const PoolDetails = () => {
                 <div className='flex flex-col space-y-1.5'>
                   <div className='flex justify-between space-x-16 mb-2 w-full'>
                     <p className='font-semibold'>Participant</p>
-                    <p className='font-semibold self-end'>Has Received</p>
+                    {/* <p className='font-semibold self-end'>Has Received</p> */}
                   </div>
-                  {Object.entries(selectedPool.hasReceived).map(
-                    ([address, hasReceived]) => (
+                  {(selectedPool.participants).map(
+                    (participant, index) => (
                       <div
-                        key={address}
+                        key={`participant-${index}`}
                         className='flex justify-between  w-full'
                       >
-                        <p>{truncateAddr(address)}</p>
-                        <p
+                        <p>{truncateAddr(participant)}</p>
+                        {/* <p
                           className={
                             hasReceived ? 'text-green-500' : 'text-red-500'
                           }
                         >
                           {hasReceived ? 'Yes' : 'No'}
-                        </p>
+                        </p> */}
                       </div>
                     )
                   )}
@@ -172,27 +193,34 @@ const PoolDetails = () => {
         <Card>
           <CardContent>
             <div className='flex flex-col w-full py-4'>
-              {selectedPool.participants.includes(address as `0x${string}`) ? (
-                <form className='flex flex-col space-y-1'>
-                  <div>
-                    <Label>Contribution Amount</Label>
-                    <Input type='number' placeholder='Amount in cUSD' />
+              {selectedPool.isRestrictedPool === true && (
+                <p className='py-2 font-semibold'>
+                  You cannot contribute to this pool.
+                </p>
+              )}
+              {selectedPool.isRestrictedPool === false &&
+                selectedPool.participants.includes(
+                  address as `0x${string}`
+                ) && (
+                  <div className='flex flex-col space-y-1'>
+                    <Button className='' variant='default'>
+                      Contribute
+                    </Button>
                   </div>
-
-                  <Button className='' variant='default'>
-                    Contribute
-                  </Button>
-                </form>
-              ) : (
-                <>
-                  <p className='py-2 font-semibold'>
-                    Join the Pool to contribute
-                  </p>
-                  <Button className='' variant='secondary'>
-                    Join Pool
-                  </Button>
-                </>
-              )}{' '}
+                )}
+              {selectedPool.isRestrictedPool === false &&
+                !selectedPool.participants.includes(
+                  address as `0x${string}`
+                ) && (
+                  <div className='flex flex-col space-y-1'>
+                    <p className='py-2 font-semibold'>
+                      Join to contribute to this pool.
+                    </p>
+                    <Button className='' variant='default'>
+                      Join Pool
+                    </Button>
+                  </div>
+                )}
             </div>
           </CardContent>
         </Card>

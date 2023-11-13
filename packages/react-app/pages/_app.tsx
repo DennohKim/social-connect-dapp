@@ -10,21 +10,22 @@ import '../styles/globals.css';
 import { InjectedConnector } from 'wagmi/connectors/injected';
 import { Lexend as FontSans } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
-
-
+import ClientOnly from '@/components/CllientOnly';
 
 export const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
 });
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID as string;
-const { chains, publicClient } = configureChains([Alfajores], [publicProvider()]);
+const { chains, publicClient } = configureChains(
+  [Alfajores],
+  [publicProvider()]
+);
 
 const connectors = celoGroups({
   chains,
   projectId,
-  appName:
-      (typeof document === "object" && document.title) || "Your App Name",
+  appName: (typeof document === 'object' && document.title) || 'Your App Name',
 });
 
 const appInfo = {
@@ -46,9 +47,12 @@ function App({ Component, pageProps }: AppProps) {
       `}</style>
       <WagmiConfig config={wagmiConfig}>
         <RainbowKitProvider chains={chains} appInfo={appInfo} coolMode={true}>
-          <Layout>
-            <Component {...pageProps} />
-          </Layout>
+          <ClientOnly>
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          </ClientOnly>
+
           <Toaster position='top-center' />
         </RainbowKitProvider>
       </WagmiConfig>
