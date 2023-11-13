@@ -40,28 +40,23 @@ const PoolDetails = () => {
     functionName: 'getAllSavingPools',
   });
 
-  //useWalletClient minipay
-  const AddContributionToPool = async () => {
-    if (walletClient) {
-      try {
-        let createToast = toast.loading('Contributing to Pool', {
-          duration: 15000,
-          position: 'top-center',
-        });
+   useEffect(() => {
+     if (savingsPool && poolID) {
+       const pool = Array.isArray(savingsPool)
+         ? savingsPool.find(
+             (pool: PoolDetails) => Number(pool.poolID) === Number(poolID)
+           )
+         : null;
+       //   console.log(pool)
 
-        let hash = await walletClient.writeContract({
-          abi: SavingsPoolABI2,
-          address: SavingsPoolAddress2,
-          functionName: 'contributeToPool',
-          args: [selectedPool?.poolID],
-        });
-        await publicClient.waitForTransactionReceipt({ hash });
-        toast.success('Contributed To Pool!', { id: createToast });
-      } catch (e) {
-        toast.error('You do not have sufficient balance!');
-      }
+       setSelectedPool(pool);
+     }
+   }, [savingsPool, poolID]);
+
+    if (!selectedPool) {
+      return <div>Pool not found</div>;
     }
-  };
+
 
   //approve
   const approveCUSDCTokens = async () => {
@@ -71,7 +66,6 @@ const PoolDetails = () => {
         position: 'top-center',
       });
       try {
-       
         let hash = await walletClient.writeContract({
           abi: CusdAbi,
           address: cUSDContractAddress,
@@ -84,6 +78,39 @@ const PoolDetails = () => {
         return txhash;
       } catch (e) {
         toast.error('Something Went Wrong!', { id: createToast });
+      }
+    }
+  };
+  
+  //useWalletClient minipay
+  const AddContributionToPool = async () => {
+    if (walletClient) {
+      try {
+        const txhash = await approveCUSDCTokens();
+        if (txhash) {
+          try {
+            let createToast = toast.loading(`Contributing to ${selectedPool?.name} Saving Pool`, {
+              duration: 15000,
+              position: 'top-center',
+            });
+
+            let hash = await walletClient.writeContract({
+              abi: SavingsPoolABI2,
+              address: SavingsPoolAddress2,
+              functionName: 'contributeToPool',
+              args: [selectedPool?.poolID],
+            });
+            await publicClient.waitForTransactionReceipt({ hash });
+            toast.success(
+              `You have contributed to ${selectedPool?.name} Saving Pool!`,
+              { id: createToast }
+            );
+          } catch (e) {
+            toast.error('Something Went Wrong!');
+          }
+        }
+      } catch (e) {
+        toast.error('Something Went Wrong!');
       }
     }
   };
@@ -104,12 +131,13 @@ const PoolDetails = () => {
               abi: SavingsPoolABI2,
               address: SavingsPoolAddress2,
               functionName: 'joinPool',
-              args: [
-                selectedPool?.poolID,
-              ],
+              args: [selectedPool?.poolID],
             });
             await publicClient.waitForTransactionReceipt({ hash });
-            toast.success(`You have joined ${selectedPool?.name} Saving Pool!`, { id: createToast });
+            toast.success(
+              `You have joined ${selectedPool?.name} Saving Pool!`,
+              { id: createToast }
+            );
           } catch (e) {
             toast.error('Something Went Wrong!');
           }
@@ -120,46 +148,9 @@ const PoolDetails = () => {
     }
   };
 
-  //useWalletClient minipay
-//   const JoinSavingPool = async () => {
-//     if (walletClient) {
-//       try {
-//         let createToast = toast.loading('Joining Pool', {
-//           duration: 15000,
-//           position: 'top-center',
-//         });
+ 
 
-//         let hash = await walletClient.writeContract({
-//           abi: SavingsPoolABI2,
-//           address: SavingsPoolAddress2,
-//           functionName: 'joinPool',
-//           args: [selectedPool?.poolID],
-//         });
-//         await publicClient.waitForTransactionReceipt({ hash });
-//         toast.success('You have joined the Pool!', { id: createToast });
-//       } catch (e) {
-//         toast.error('You do not have sufficient balance to join the pool!');
-//       }
-//     }
-//   };
-
-  useEffect(() => {
-    if (savingsPool && poolID) {
-      const pool = Array.isArray(savingsPool)
-        ? savingsPool.find(
-            (pool: PoolDetails) => Number(pool.poolID) === Number(poolID)
-          )
-        : null;
-      //   console.log(pool)
-
-      setSelectedPool(pool);
-    }
-  }, [savingsPool, poolID]);
-
-  if (!selectedPool) {
-    return <div>Pool not found</div>;
-  }
-
+ 
   return (
     <>
       <div className='flex flex-col space-y-3'>
