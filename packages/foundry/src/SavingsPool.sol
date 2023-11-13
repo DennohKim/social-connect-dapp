@@ -72,8 +72,7 @@ contract ChamaPool {
     mapping(uint => mapping(address => uint)) public totalNumberOfTurnsPerpool;
     uint public poolCounter;
 
-    address internal cUsdTokenAddress =
-        0xd9145CCE52D386f254917e481eB44e9943F39138; //0x78c4E798b65f1c96c4eEC6f5F93E51584593e723;
+    address internal cUsdTokenAddress =0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1; //0x78c4E798b65f1c96c4eEC6f5F93E51584593e723;
 
     event PoolCreated(
         uint poolId,
