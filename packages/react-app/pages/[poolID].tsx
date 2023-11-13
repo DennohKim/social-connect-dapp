@@ -310,12 +310,19 @@ const PoolDetails = () => {
                   ))}
                 </div>{' '}
               </div>
-			  {selectedPool.isRestrictedPool === true && (
-				<div>
-					<Label htmlFor="minipay phone number">Add a Friend(Use their minipay phone number)</Label>
-					<Input type='text' name='minipay phone number'/>
-				</div>
-			  )}
+              {selectedPool.isRestrictedPool === true && (
+                <div>
+                  <Label htmlFor='minipay phone number' className='text-gray-700'>
+                    Add a Friend (Use their minipay phone number)
+                  </Label>
+                  <Input
+                    type='text'
+                    name='minipay phone number'
+                    className='my-2'
+					placeholder='+254712345678'
+                  />
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -379,7 +386,11 @@ const PoolDetails = () => {
                     <Input type='number' placeholder='Amount in cUSD' />
                   </div>
 
-                  <Button className='' variant='default' onClick={() => claimSavingsPoolTurn()}>
+                  <Button
+                    className=''
+                    variant='default'
+                    onClick={() => claimSavingsPoolTurn()}
+                  >
                     Claim Turn
                   </Button>
                 </form>
