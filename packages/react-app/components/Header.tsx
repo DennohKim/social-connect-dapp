@@ -1,5 +1,6 @@
 import { Disclosure } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -65,6 +66,24 @@ export default function Header() {
                     My Pools
                   </Link>
                 </div>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+                                {!hideConnectBtn && (
+                                    <ConnectButton
+                                        showBalance={{
+                                            smallScreen: false,
+                                            largeScreen: true,
+                                        }}
+                                        accountStatus={{
+                                            smallScreen: "avatar",
+                                            largeScreen: "address",
+                                        }}
+                                        chainStatus={{
+                                            smallScreen: "none",
+                                            largeScreen: "full",
+                                        }}
+                                    />
+                                )}
+                            </div>
               </div>
             </div>
           </div>
