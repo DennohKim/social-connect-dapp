@@ -148,7 +148,37 @@ const PoolDetails = () => {
     }
   };
 
- 
+   const claimSavingsPoolTurn = async () => {
+     if (walletClient) {
+       try {
+         const txhash = await approveCUSDCTokens();
+         if (txhash) {
+           try {
+             let createToast = toast.loading('Joining Saving Pool', {
+               duration: 15000,
+               position: 'top-center',
+             });
+
+             let hash = await walletClient.writeContract({
+               abi: SavingsPoolABI2,
+               address: SavingsPoolAddress2,
+               functionName: 'claimTurn',
+               args: [selectedPool?.poolID],
+             });
+             await publicClient.waitForTransactionReceipt({ hash });
+             toast.success(
+               `You have joined ${selectedPool?.name} Saving Pool!`,
+               { id: createToast }
+             );
+           } catch (e) {
+             toast.error('Something Went Wrong!');
+           }
+         }
+       } catch (e) {
+         toast.error('Something Went Wrong!');
+       }
+     }
+   };
 
  
   return (
@@ -230,9 +260,9 @@ const PoolDetails = () => {
               </div>
               <div className='flex justify-between items-center'>
                 <div className='flex flex-col space-y-1'>
-                  <h2 className='font-semibold text-sm'>Start Date</h2>
+                  <h2 className='font-semibold text-sm'>User Current Turn</h2>
                   <h2 className='font-normal '>
-                    {/* {convertBlockTimestampToDate(selectedPool.startTime)} */}
+                    {truncateAddr(selectedPool.userTurnAddress)}
                   </h2>
                 </div>
                 <div className='flex flex-col space-y-1'>
@@ -280,6 +310,12 @@ const PoolDetails = () => {
                   ))}
                 </div>{' '}
               </div>
+			  {selectedPool.isRestrictedPool === true && (
+				<div>
+					<Label htmlFor="minipay phone number">Add a Friend(Use their minipay phone number)</Label>
+					<Input type='text' name='minipay phone number'/>
+				</div>
+			  )}
             </div>
           </CardContent>
         </Card>
@@ -343,7 +379,7 @@ const PoolDetails = () => {
                     <Input type='number' placeholder='Amount in cUSD' />
                   </div>
 
-                  <Button className='' variant='default'>
+                  <Button className='' variant='default' onClick={() => claimSavingsPoolTurn()}>
                     Claim Turn
                   </Button>
                 </form>
