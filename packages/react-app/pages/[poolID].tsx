@@ -5,19 +5,28 @@ import { getPoolsData } from '@/data/pools';
 import { convertBlockTimestampToDate, truncateAddr } from '@/lib/utils';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAccount, useContractRead } from 'wagmi';
+import {
+  useAccount,
+  useContractRead,
+  usePublicClient,
+  useWalletClient,
+} from 'wagmi';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { SavingsPoolABI2, SavingsPoolAddress2 } from '@/constants/constants';
 import { ethers } from 'ethers';
+import toast from 'react-hot-toast';
 
 const PoolDetails = () => {
   const router = useRouter();
 
   const { address } = useAccount();
 
-  const { poolID } = router.query;
+  const { data: walletClient } = useWalletClient();
 
+  const publicClient = usePublicClient();
+
+  const { poolID } = router.query;
 
   const [selectedPool, setSelectedPool] = useState<PoolDetails>();
 
@@ -31,20 +40,64 @@ const PoolDetails = () => {
     functionName: 'getAllSavingPools',
   });
 
+  //useWalletClient minipay
+  const AddContributionToPool = async () => {
+    if (walletClient) {
+      try {
+        let createToast = toast.loading('Contributing to Pool', {
+          duration: 15000,
+          position: 'top-center',
+        });
 
-useEffect(() => {
-  if (savingsPool && poolID) {
-    const pool = Array.isArray(savingsPool)
-      ? savingsPool.find(
-          (pool: PoolDetails) => Number(pool.poolID) === Number(poolID)
-        )
-      : null;
-	  console.log(pool)
+        let hash = await walletClient.writeContract({
+          abi: SavingsPoolABI2,
+          address: SavingsPoolAddress2,
+          functionName: 'contributeToPool',
+          args: [selectedPool?.poolID],
+        });
+        await publicClient.waitForTransactionReceipt({ hash });
+        toast.success('Contributed To Pool!', { id: createToast });
+      } catch (e) {
+        toast.error('You do not have sufficient balance!');
+      }
+    }
+  };
 
-    setSelectedPool(pool);
-  }
-}, [savingsPool, poolID]);
+  //useWalletClient minipay
+  const JoinSavingPool = async () => {
+    if (walletClient) {
+      try {
+        let createToast = toast.loading('Joining Pool', {
+          duration: 15000,
+          position: 'top-center',
+        });
 
+        let hash = await walletClient.writeContract({
+          abi: SavingsPoolABI2,
+          address: SavingsPoolAddress2,
+          functionName: 'joinPool',
+          args: [selectedPool?.poolID],
+        });
+        await publicClient.waitForTransactionReceipt({ hash });
+        toast.success('You have joined the Pool!', { id: createToast });
+      } catch (e) {
+        toast.error('You do not have sufficient balance to join the pool!');
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (savingsPool && poolID) {
+      const pool = Array.isArray(savingsPool)
+        ? savingsPool.find(
+            (pool: PoolDetails) => Number(pool.poolID) === Number(poolID)
+          )
+        : null;
+      //   console.log(pool)
+
+      setSelectedPool(pool);
+    }
+  }, [savingsPool, poolID]);
 
   if (!selectedPool) {
     return <div>Pool not found</div>;
@@ -199,7 +252,11 @@ useEffect(() => {
                   address as `0x${string}`
                 ) && (
                   <div className='flex flex-col space-y-1'>
-                    <Button className='' variant='default'>
+                    <Button
+                      className=''
+                      variant='default'
+                      onClick={() => AddContributionToPool()}
+                    >
                       Contribute
                     </Button>
                   </div>
@@ -212,7 +269,7 @@ useEffect(() => {
                     <p className='py-2 font-semibold'>
                       Join to contribute to this pool.
                     </p>
-                    <Button className='' variant='default'>
+                    <Button className='' variant='default' onClick={() => JoinSavingPool()}>
                       Join Pool
                     </Button>
                   </div>
