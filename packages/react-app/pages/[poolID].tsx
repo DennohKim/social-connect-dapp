@@ -13,7 +13,7 @@ import {
 } from 'wagmi';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { SavingsPoolABI2, SavingsPoolAddress2 } from '@/constants/constants';
+import { CusdAbi, SavingsPoolABI2, SavingsPoolAddress2, cUSDContractAddress } from '@/constants/constants';
 import { ethers } from 'ethers';
 import toast from 'react-hot-toast';
 
@@ -63,28 +63,85 @@ const PoolDetails = () => {
     }
   };
 
-  //useWalletClient minipay
-  const JoinSavingPool = async () => {
+  //approve
+  const approveCUSDCTokens = async () => {
     if (walletClient) {
+      let createToast = toast.loading('Approving ...', {
+        duration: 15000,
+        position: 'top-center',
+      });
       try {
-        let createToast = toast.loading('Joining Pool', {
-          duration: 15000,
-          position: 'top-center',
-        });
-
+       
         let hash = await walletClient.writeContract({
-          abi: SavingsPoolABI2,
-          address: SavingsPoolAddress2,
-          functionName: 'joinPool',
-          args: [selectedPool?.poolID],
+          abi: CusdAbi,
+          address: cUSDContractAddress,
+          functionName: 'approve',
+          args: [SavingsPoolAddress2, selectedPool?.contributionPerParticipant],
         });
-        await publicClient.waitForTransactionReceipt({ hash });
-        toast.success('You have joined the Pool!', { id: createToast });
+        const txhash = await publicClient.waitForTransactionReceipt({ hash });
+
+        toast.success('Transfer Approved!', { id: createToast });
+        return txhash;
       } catch (e) {
-        toast.error('You do not have sufficient balance to join the pool!');
+        toast.error('Something Went Wrong!', { id: createToast });
       }
     }
   };
+
+  //useWalletClient minipay
+  const joinSavingsPool = async () => {
+    if (walletClient) {
+      try {
+        const txhash = await approveCUSDCTokens();
+        if (txhash) {
+          try {
+            let createToast = toast.loading('Joining Saving Pool', {
+              duration: 15000,
+              position: 'top-center',
+            });
+
+            let hash = await walletClient.writeContract({
+              abi: SavingsPoolABI2,
+              address: SavingsPoolAddress2,
+              functionName: 'joinPool',
+              args: [
+                selectedPool?.poolID,
+              ],
+            });
+            await publicClient.waitForTransactionReceipt({ hash });
+            toast.success(`You have joined ${selectedPool?.name} Saving Pool!`, { id: createToast });
+          } catch (e) {
+            toast.error('Something Went Wrong!');
+          }
+        }
+      } catch (e) {
+        toast.error('Something Went Wrong!');
+      }
+    }
+  };
+
+  //useWalletClient minipay
+//   const JoinSavingPool = async () => {
+//     if (walletClient) {
+//       try {
+//         let createToast = toast.loading('Joining Pool', {
+//           duration: 15000,
+//           position: 'top-center',
+//         });
+
+//         let hash = await walletClient.writeContract({
+//           abi: SavingsPoolABI2,
+//           address: SavingsPoolAddress2,
+//           functionName: 'joinPool',
+//           args: [selectedPool?.poolID],
+//         });
+//         await publicClient.waitForTransactionReceipt({ hash });
+//         toast.success('You have joined the Pool!', { id: createToast });
+//       } catch (e) {
+//         toast.error('You do not have sufficient balance to join the pool!');
+//       }
+//     }
+//   };
 
   useEffect(() => {
     if (savingsPool && poolID) {
@@ -269,7 +326,11 @@ const PoolDetails = () => {
                     <p className='py-2 font-semibold'>
                       Join to contribute to this pool.
                     </p>
-                    <Button className='' variant='default' onClick={() => JoinSavingPool()}>
+                    <Button
+                      className=''
+                      variant='default'
+                      onClick={() => joinSavingsPool()}
+                    >
                       Join Pool
                     </Button>
                   </div>
