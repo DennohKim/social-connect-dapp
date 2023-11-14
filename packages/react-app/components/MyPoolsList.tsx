@@ -33,14 +33,14 @@ const MyPoolsList = () => {
 
   return (
     <>
-      {isLoading ? (
+      {isLoading && address ? (
         <p>Data Loading...</p>
       ) : Array.isArray(mySavingsPool) ? (
         mySavingsPool.map((pool: PoolDetails) => (
           <MyPoolCard key={pool.poolID} pool={pool} />
         ))
       ) : (
-        <p>No data available</p>
+        <p>No Pools available</p>
       )}
     </>
   );

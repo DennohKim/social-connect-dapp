@@ -390,11 +390,6 @@ const PoolDetails = () => {
             <div className='flex flex-col w-full py-4'>
               {selectedPool.userTurnAddress === address ? (
                 <form className='flex flex-col space-y-1'>
-                  <div>
-                    <Label>You can claim this turn</Label>
-                    <Input type='number' placeholder='Amount in cUSD' />
-                  </div>
-
                   <Button
                     className=''
                     variant='default'
