@@ -236,7 +236,7 @@ contract ChamaPool {
     }
 
     //function return deposits
-    function withdrawDepositFromPool(uint _poolId) public {
+    function withdrawDepositFromPool(uint _poolId) internal {
         require(_poolId < poolCounter, "Invalid pool ID");
         _returnDeposits(_poolId);
     }
@@ -289,11 +289,13 @@ contract ChamaPool {
         address currentClaimant = pool.participants[pool.currentTurn];
 
         require(currentClaimant == msg.sender, "It's not your turn to claim");
-        require(
-            pool.currentTurn != pool.participants.length,
-            "done with the round"
-        );
+          require(
+    pool.currentTurn <= pool.participants.length,
+    "done with the round"
+);
         require(turn[poolId].endTime <= block.timestamp, "waitfor turn to end");
+         uint totalAmountToContribute = pool.participants.length * pool.contributionPerParticipant;
+        require(totalAmountToContribute == poolContributionbalances[poolId],"not all members have contributed" );
         // Transfer the turn balance to the claimant.
         uint amountToTransfer = poolbalances[poolId] -
             poolContributionbalances[poolId];
@@ -316,6 +318,10 @@ contract ChamaPool {
             msg.sender,
             amountToTransfer
         );
+         if (pool.currentTurn == pool.participants.length) {
+        // Call withdrawDepositFromPool as the last participant has claimed their turn
+        withdrawDepositFromPool(poolId);
+    }
     }
 
     //update turn
