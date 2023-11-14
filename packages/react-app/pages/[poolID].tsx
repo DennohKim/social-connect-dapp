@@ -514,7 +514,7 @@ const PoolDetails = () => {
           <CardContent>
             <div className='flex flex-col w-full py-4'>
               {selectedPool.userTurnAddress === address ? (
-                <form className='flex flex-col space-y-1'>
+                <div className='flex flex-col space-y-1'>
                   <Button
                     className=''
                     variant='default'
@@ -522,7 +522,7 @@ const PoolDetails = () => {
                   >
                     Claim Turn
                   </Button>
-                </form>
+                </div>
               ) : (
                 <>
                   <p className='py-2 font-semibold'>
