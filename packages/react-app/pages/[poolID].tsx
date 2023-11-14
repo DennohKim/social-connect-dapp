@@ -13,7 +13,14 @@ import {
 } from 'wagmi';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { CusdAbi, ManagementAddress2, ManagementContractABI2, SavingsPoolABI2, SavingsPoolAddress2, cUSDContractAddress } from '@/constants/constants';
+import {
+  CusdAbi,
+  ManagementAddress2,
+  ManagementContractABI2,
+  SavingsPoolABI2,
+  SavingsPoolAddress2,
+  cUSDContractAddress,
+} from '@/constants/constants';
 import { ethers } from 'ethers';
 import toast from 'react-hot-toast';
 import { LookupResponse } from './api/lookup';
@@ -93,32 +100,32 @@ const PoolDetails = () => {
     }
   };
 
-   const approveCUSDToJoinPool = async () => {
-     if (walletClient) {
-       let createToast = toast.loading('Approving ...', {
-         duration: 15000,
-         position: 'top-center',
-       });
-       try {
-         let hash = await walletClient.writeContract({
-           abi: CusdAbi,
-           address: cUSDContractAddress,
-           functionName: 'approve',
-           args: [
-             SavingsPoolAddress2,
-             (Number(selectedPool?.contributionPerParticipant))* 2,
-           ],
-         });
-         const txhash = await publicClient.waitForTransactionReceipt({ hash });
+  const approveCUSDToJoinPool = async () => {
+    if (walletClient) {
+      let createToast = toast.loading('Approving ...', {
+        duration: 15000,
+        position: 'top-center',
+      });
+      try {
+        let hash = await walletClient.writeContract({
+          abi: CusdAbi,
+          address: cUSDContractAddress,
+          functionName: 'approve',
+          args: [
+            SavingsPoolAddress2,
+            Number(selectedPool?.contributionPerParticipant) * 2,
+          ],
+        });
+        const txhash = await publicClient.waitForTransactionReceipt({ hash });
 
-         toast.success('Transfer Approved!', { id: createToast });
-         return txhash;
-       } catch (e) {
-         toast.error('Something Went Wrong!', { id: createToast });
-		 console.log(e)
-       }
-     }
-   };
+        toast.success('Transfer Approved!', { id: createToast });
+        return txhash;
+      } catch (e) {
+        toast.error('Something Went Wrong!', { id: createToast });
+        console.log(e);
+      }
+    }
+  };
 
   //useWalletClient minipay
   const AddContributionToPool = async () => {
@@ -191,30 +198,26 @@ const PoolDetails = () => {
 
   const claimSavingsPoolTurn = async () => {
     if (walletClient) {
-    
-      
-          try {
-            let createToast = toast.loading('Claiming your turn', {
-              duration: 15000,
-              position: 'top-center',
-            });
+      try {
+        let createToast = toast.loading('Claiming your turn', {
+          duration: 15000,
+          position: 'top-center',
+        });
 
-            let hash = await walletClient.writeContract({
-              abi: SavingsPoolABI2,
-              address: SavingsPoolAddress2,
-              functionName: 'claimTurn',
-              args: [selectedPool?.poolID],
-            });
-            await publicClient.waitForTransactionReceipt({ hash });
-            toast.success(
-              `You have claimed your turn in ${selectedPool?.name} Saving Pool!`,
-              { id: createToast }
-            );
-          } catch (e) {
-            toast.error('Something Went Wrong!');
-          }
-        
-      
+        let hash = await walletClient.writeContract({
+          abi: SavingsPoolABI2,
+          address: SavingsPoolAddress2,
+          functionName: 'claimTurn',
+          args: [selectedPool?.poolID],
+        });
+        await publicClient.waitForTransactionReceipt({ hash });
+        toast.success(
+          `You have claimed your turn in ${selectedPool?.name} Saving Pool!`,
+          { id: createToast }
+        );
+      } catch (e) {
+        toast.error('Something Went Wrong!');
+      }
     }
   };
 
@@ -242,31 +245,29 @@ const PoolDetails = () => {
   //useWalletClient minipay
   const AddFriendliesToPool = async () => {
     if (walletClient) {
-          try {
-            let createToast = toast.loading(
-              `Adding a friend to ${selectedPool?.name} Saving Pool`,
-              {
-                duration: 15000,
-                position: 'top-center',
-              }
-            );
-
-            let hash = await walletClient.writeContract({
-              abi: ManagementContractABI2,
-              address: ManagementAddress2,
-              functionName: 'setBatchFriendlies',
-              args: [...friendlies],
-            });
-            await publicClient.waitForTransactionReceipt({ hash });
-            toast.success(
-              `You have added friends to ${selectedPool?.name} Saving Pool!`,
-              { id: createToast }
-            );
-          } catch (e) {
-            toast.error('Something Went Wrong!');
+      try {
+        let createToast = toast.loading(
+          `Adding a friend to ${selectedPool?.name} Saving Pool`,
+          {
+            duration: 15000,
+            position: 'top-center',
           }
-        
-      
+        );
+
+        let hash = await walletClient.writeContract({
+          abi: ManagementContractABI2,
+          address: ManagementAddress2,
+          functionName: 'setBatchFriendlies',
+          args: [...friendlies],
+        });
+        await publicClient.waitForTransactionReceipt({ hash });
+        toast.success(
+          `You have added friends to ${selectedPool?.name} Saving Pool!`,
+          { id: createToast }
+        );
+      } catch (e) {
+        toast.error('Something Went Wrong!');
+      }
     }
   };
 
@@ -420,14 +421,23 @@ const PoolDetails = () => {
 
                   {friendlies.map((friendly, index) => (
                     <div key={index} className='flex flex-col space-x-2'>
-                      <Input
-                        onChange={({ target }) =>
-                          addFriendlies(index, target.value)
-                        }
-                        value={friendly[index]}
-                        className='my-2'
-                        placeholder='+254712345678'
-                      />
+                      <div className='flex flex-col space-x-5'>
+                        <Input
+                          onChange={({ target }) =>
+                            addFriendlies(index, target.value)
+                          }
+                          value={friendly[index]}
+                          className='my-2'
+                          placeholder='+254712345678'
+                        />
+                        <Button
+                          onClick={() => AddFriendliesToPool()}
+                          className='self-start px-2 py-2 bg-prosperity border-black border'
+                        >
+                          Add a Friend
+                        </Button>
+                      </div>
+
                       {friendlies[index].length > 2 &&
                         !friendlies[index].startsWith('0x') && (
                           <Button
@@ -439,12 +449,13 @@ const PoolDetails = () => {
                         )}
                     </div>
                   ))}
-                  <button
-                    onClick={() =>  AddFriendliesToPool()}
+                  <Button
+                    onClick={() => addFrendliesField()}
                     className='self-start px-2 py-2 bg-prosperity border-black border'
+                    variant='secondary'
                   >
                     + Add Friend
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
