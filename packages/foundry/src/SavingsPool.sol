@@ -298,12 +298,13 @@ contract ChamaPool {
 
         require(currentClaimant == msg.sender, "It's not your turn to claim");
           require(
-    pool.currentTurn <= pool.participants.length,
+    pool.currentTurn < pool.participants.length,
     "done with the round"
 );
         require(turn[poolId].endTime <= block.timestamp, "waitfor turn to end");
         
         require( poolContributionbalances[poolId] > 0,"notcontributed for this turn yet" );
+        
         // Transfer the turn balance to the claimant.
         uint amountToTransfer = poolbalances[poolId] -
             poolContributionbalances[poolId];
@@ -311,7 +312,11 @@ contract ChamaPool {
         poolbalances[poolId] -= amountToTransfer;
         pool._poolBalance -= amountToTransfer;
 
-        // Update the turn details.
+ if (pool.currentTurn == pool.participants.length - 1) {
+    // Call withdrawDepositFromPool as the last participant has claimed their turn
+    withdrawDepositFromPool(poolId);
+}else{
+ // Update the turn details.
         pool.currentTurn += 1;
         pool.userTurnAddress = pool.participants[pool.currentTurn];
 
@@ -326,10 +331,9 @@ contract ChamaPool {
             msg.sender,
             amountToTransfer
         );
-         if (pool.currentTurn == pool.participants.length) {
-        // Call withdrawDepositFromPool as the last participant has claimed their turn
-        withdrawDepositFromPool(poolId);
-    }
+        
+}
+       
     }
 
     //update turn
