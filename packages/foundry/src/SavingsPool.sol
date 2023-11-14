@@ -217,9 +217,17 @@ contract ChamaPool {
         );
         Pool storage pool = pools[_poolID];
 
-        require(
-            totalNumberOfTurnsPerpool[_poolID][msg.sender] <
-                pool.participants.length,
+        // require(
+        //     totalNumberOfTurnsPerpool[_poolID][msg.sender] <
+        //         pool.participants.length,
+        //     "done with the round"
+        // );
+        /**
+         * @ check userturn equal to the current PoolTurn
+         */
+                require(
+            totalNumberOfTurnsPerpool[_poolID][msg.sender] == pool.currentTurn,
+               
             "done with the round"
         );
         uint _amount = pools[_poolID].contributionPerParticipant;
@@ -294,7 +302,7 @@ contract ChamaPool {
     "done with the round"
 );
         require(turn[poolId].endTime <= block.timestamp, "waitfor turn to end");
-         uint totalAmountToContribute = pool.participants.length * pool.contributionPerParticipant;
+         uint totalAmountToContribute = pool.maxParticipants * pool.contributionPerParticipant;
         require(totalAmountToContribute == poolContributionbalances[poolId],"not all members have contributed" );
         // Transfer the turn balance to the claimant.
         uint amountToTransfer = poolbalances[poolId] -
