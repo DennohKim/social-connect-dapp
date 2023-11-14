@@ -302,8 +302,8 @@ contract ChamaPool {
     "done with the round"
 );
         require(turn[poolId].endTime <= block.timestamp, "waitfor turn to end");
-         uint totalAmountToContribute = pool.maxParticipants * pool.contributionPerParticipant;
-        require(totalAmountToContribute == poolContributionbalances[poolId],"not all members have contributed" );
+        
+        require( poolContributionbalances[poolId] > 0,"notcontributed for this turn yet" );
         // Transfer the turn balance to the claimant.
         uint amountToTransfer = poolbalances[poolId] -
             poolContributionbalances[poolId];

@@ -15,7 +15,7 @@ export const ManagementContractABI = ManagementABI.abi
 //  src/SavingsPool.sol:ChamaPool
 
 export const ManagementAddress2 = '0x93b63165Ae71422D4567a6abB39860777B8A62Dd'
-export const SavingsPoolAddress2 ="0x8269021BDaCd931eE1A453330f9Fbc2a57b9Df43"; //'0xEc6Db94C1697EB98Fe9E74aD23972E3c1377C1cD';
+export const SavingsPoolAddress2 ="0x907De4cFCab7965646cDc514783aB2B59cbF3378"; //'0xEc6Db94C1697EB98Fe9E74aD23972E3c1377C1cD';
 export const cUSDContractAddress ="0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
 
 export const SavingsPoolABI2 = SavingsPoolAbi;
