@@ -93,6 +93,33 @@ const PoolDetails = () => {
     }
   };
 
+   const approveCUSDToJoinPool = async () => {
+     if (walletClient) {
+       let createToast = toast.loading('Approving ...', {
+         duration: 15000,
+         position: 'top-center',
+       });
+       try {
+         let hash = await walletClient.writeContract({
+           abi: CusdAbi,
+           address: cUSDContractAddress,
+           functionName: 'approve',
+           args: [
+             SavingsPoolAddress2,
+             (Number(selectedPool?.contributionPerParticipant))* 2,
+           ],
+         });
+         const txhash = await publicClient.waitForTransactionReceipt({ hash });
+
+         toast.success('Transfer Approved!', { id: createToast });
+         return txhash;
+       } catch (e) {
+         toast.error('Something Went Wrong!', { id: createToast });
+		 console.log(e)
+       }
+     }
+   };
+
   //useWalletClient minipay
   const AddContributionToPool = async () => {
     if (walletClient) {
@@ -133,7 +160,7 @@ const PoolDetails = () => {
   const joinSavingsPool = async () => {
     if (walletClient) {
       try {
-        const txhash = await approveCUSDCTokens();
+        const txhash = await approveCUSDToJoinPool();
         if (txhash) {
           try {
             let createToast = toast.loading('Joining Saving Pool', {
@@ -164,11 +191,10 @@ const PoolDetails = () => {
 
   const claimSavingsPoolTurn = async () => {
     if (walletClient) {
-      try {
-        const txhash = await approveCUSDCTokens();
-        if (txhash) {
+    
+      
           try {
-            let createToast = toast.loading('Joining Saving Pool', {
+            let createToast = toast.loading('Claiming your turn', {
               duration: 15000,
               position: 'top-center',
             });
@@ -181,16 +207,14 @@ const PoolDetails = () => {
             });
             await publicClient.waitForTransactionReceipt({ hash });
             toast.success(
-              `You have joined ${selectedPool?.name} Saving Pool!`,
+              `You have claimed your turn in ${selectedPool?.name} Saving Pool!`,
               { id: createToast }
             );
           } catch (e) {
             toast.error('Something Went Wrong!');
           }
-        }
-      } catch (e) {
-        toast.error('Something Went Wrong!');
-      }
+        
+      
     }
   };
 
@@ -505,7 +529,7 @@ const PoolDetails = () => {
                     You cannot claim this turn.
                   </p>
                   <Button
-                    className='disabled:bg-gray-700 '
+                    className='disabled:bg-gray-700 text-white'
                     variant='secondary'
                     disabled
                   >
