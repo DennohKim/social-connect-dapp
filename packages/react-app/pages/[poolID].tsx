@@ -13,9 +13,10 @@ import {
 } from 'wagmi';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { CusdAbi, SavingsPoolABI2, SavingsPoolAddress2, cUSDContractAddress } from '@/constants/constants';
+import { CusdAbi, ManagementAddress2, ManagementContractABI2, SavingsPoolABI2, SavingsPoolAddress2, cUSDContractAddress } from '@/constants/constants';
 import { ethers } from 'ethers';
 import toast from 'react-hot-toast';
+import { LookupResponse } from './api/lookup';
 
 const PoolDetails = () => {
   const router = useRouter();
@@ -30,6 +31,17 @@ const PoolDetails = () => {
 
   const [selectedPool, setSelectedPool] = useState<PoolDetails>();
 
+  const [friendlies, setFriendlies] = useState<string[]>([]);
+
+  function addFrendliesField() {
+    setFriendlies([...friendlies, '']);
+  }
+
+  function addFriendlies(index: number, value: string) {
+    friendlies[index] = value;
+    setFriendlies([...friendlies]);
+  }
+
   const {
     data: savingsPool,
     isError,
@@ -40,23 +52,22 @@ const PoolDetails = () => {
     functionName: 'getAllSavingPools',
   });
 
-   useEffect(() => {
-     if (savingsPool && poolID) {
-       const pool = Array.isArray(savingsPool)
-         ? savingsPool.find(
-             (pool: PoolDetails) => Number(pool.poolID) === Number(poolID)
-           )
-         : null;
-       //   console.log(pool)
+  useEffect(() => {
+    if (savingsPool && poolID) {
+      const pool = Array.isArray(savingsPool)
+        ? savingsPool.find(
+            (pool: PoolDetails) => Number(pool.poolID) === Number(poolID)
+          )
+        : null;
+      //   console.log(pool)
 
-       setSelectedPool(pool);
-     }
-   }, [savingsPool, poolID]);
-
-    if (!selectedPool) {
-      return <div>Pool not found</div>;
+      setSelectedPool(pool);
     }
+  }, [savingsPool, poolID]);
 
+  if (!selectedPool) {
+    return <div>Pool not found</div>;
+  }
 
   //approve
   const approveCUSDCTokens = async () => {
@@ -81,7 +92,7 @@ const PoolDetails = () => {
       }
     }
   };
-  
+
   //useWalletClient minipay
   const AddContributionToPool = async () => {
     if (walletClient) {
@@ -89,10 +100,13 @@ const PoolDetails = () => {
         const txhash = await approveCUSDCTokens();
         if (txhash) {
           try {
-            let createToast = toast.loading(`Contributing to ${selectedPool?.name} Saving Pool`, {
-              duration: 15000,
-              position: 'top-center',
-            });
+            let createToast = toast.loading(
+              `Contributing to ${selectedPool?.name} Saving Pool`,
+              {
+                duration: 15000,
+                position: 'top-center',
+              }
+            );
 
             let hash = await walletClient.writeContract({
               abi: SavingsPoolABI2,
@@ -148,39 +162,90 @@ const PoolDetails = () => {
     }
   };
 
-   const claimSavingsPoolTurn = async () => {
-     if (walletClient) {
-       try {
-         const txhash = await approveCUSDCTokens();
-         if (txhash) {
-           try {
-             let createToast = toast.loading('Joining Saving Pool', {
-               duration: 15000,
-               position: 'top-center',
-             });
+  const claimSavingsPoolTurn = async () => {
+    if (walletClient) {
+      try {
+        const txhash = await approveCUSDCTokens();
+        if (txhash) {
+          try {
+            let createToast = toast.loading('Joining Saving Pool', {
+              duration: 15000,
+              position: 'top-center',
+            });
 
-             let hash = await walletClient.writeContract({
-               abi: SavingsPoolABI2,
-               address: SavingsPoolAddress2,
-               functionName: 'claimTurn',
-               args: [selectedPool?.poolID],
-             });
-             await publicClient.waitForTransactionReceipt({ hash });
-             toast.success(
-               `You have joined ${selectedPool?.name} Saving Pool!`,
-               { id: createToast }
-             );
-           } catch (e) {
-             toast.error('Something Went Wrong!');
-           }
-         }
-       } catch (e) {
-         toast.error('Something Went Wrong!');
-       }
-     }
-   };
+            let hash = await walletClient.writeContract({
+              abi: SavingsPoolABI2,
+              address: SavingsPoolAddress2,
+              functionName: 'claimTurn',
+              args: [selectedPool?.poolID],
+            });
+            await publicClient.waitForTransactionReceipt({ hash });
+            toast.success(
+              `You have joined ${selectedPool?.name} Saving Pool!`,
+              { id: createToast }
+            );
+          } catch (e) {
+            toast.error('Something Went Wrong!');
+          }
+        }
+      } catch (e) {
+        toast.error('Something Went Wrong!');
+      }
+    }
+  };
 
- 
+  async function lookup(index: number) {
+    let lookupToast = toast.loading('Looking up the address');
+    let response: Response = await fetch(
+      `/api/socialconnect/lookup?${new URLSearchParams({
+        handle: friendlies[index],
+      })}`,
+      {
+        method: 'GET',
+      }
+    );
+
+    let lookupResponse: LookupResponse = await response.json();
+    if (lookupResponse.accounts.length > 0) {
+      addFriendlies(index, lookupResponse.accounts[0]);
+      toast.success('Address found!', { id: lookupToast });
+    } else {
+      addFriendlies(index, '');
+      toast.error('No Address found', { id: lookupToast });
+    }
+  }
+
+  //useWalletClient minipay
+  const AddFriendliesToPool = async () => {
+    if (walletClient) {
+          try {
+            let createToast = toast.loading(
+              `Adding a friend to ${selectedPool?.name} Saving Pool`,
+              {
+                duration: 15000,
+                position: 'top-center',
+              }
+            );
+
+            let hash = await walletClient.writeContract({
+              abi: ManagementContractABI2,
+              address: ManagementAddress2,
+              functionName: 'setBatchFriendlies',
+              args: [...friendlies],
+            });
+            await publicClient.waitForTransactionReceipt({ hash });
+            toast.success(
+              `You have added friends to ${selectedPool?.name} Saving Pool!`,
+              { id: createToast }
+            );
+          } catch (e) {
+            toast.error('Something Went Wrong!');
+          }
+        
+      
+    }
+  };
+
   return (
     <>
       <div className='flex flex-col space-y-3'>
@@ -205,12 +270,12 @@ const PoolDetails = () => {
             <div className='grid w-full items-center gap-4'>
               <div className='flex justify-between items-center pt-4'>
                 <div className='flex flex-col space-y-1.5'>
-                  <h2 className='font-semibold text-sm'>Pool Status</h2>
+                  <h2 className='font-semibold text-sm'>Restrictions</h2>
                   <div
                     className={`text-sm font-semibold ${
                       selectedPool.isRestrictedPool
-                        ? 'text-red-600 bg-red-500/25 p-3 rounded-md'
-                        : 'text-green-400 bg-green-500/25 p-3 rounded-md'
+                        ? 'text-red-600 bg-red-500/25 p-2 rounded-md'
+                        : 'text-green-400 bg-green-500/25 p-2 rounded-md'
                     }`}
                   >
                     {selectedPool.isRestrictedPool
@@ -272,13 +337,17 @@ const PoolDetails = () => {
                   </h2>
                 </div>
                 <div className='flex flex-col space-y-1'>
-                  <h2 className='font-semibold text-sm self-end'>Status</h2>
+                  <h2 className='font-semibold text-sm self-end'>
+                    Pool Status
+                  </h2>
                   <div
-                    className={`text-sm font-semibold ${
-                      selectedPool.active ? 'text-red-600' : 'text-green-600'
+                    className={`text-sm font-semibold self-end ${
+                      selectedPool.active === false
+                        ? 'text-red-600'
+                        : 'text-green-600'
                     }`}
                   >
-                    {selectedPool.active ? 'Inactive' : 'Active'}
+                    {selectedPool.active === false ? 'Inactive' : 'Active'}
                   </div>{' '}
                 </div>
               </div>
@@ -317,19 +386,41 @@ const PoolDetails = () => {
                 </div>{' '}
               </div>
               {selectedPool.isRestrictedPool === true && (
-                <div>
+                <div className='flex flex-col'>
                   <Label
                     htmlFor='minipay phone number'
                     className='text-gray-700'
                   >
                     Add a Friend (Use their minipay phone number)
                   </Label>
-                  <Input
-                    type='text'
-                    name='minipay phone number'
-                    className='my-2'
-                    placeholder='+254712345678'
-                  />
+
+                  {friendlies.map((friendly, index) => (
+                    <div key={index} className='flex flex-col space-x-2'>
+                      <Input
+                        onChange={({ target }) =>
+                          addFriendlies(index, target.value)
+                        }
+                        value={friendly[index]}
+                        className='my-2'
+                        placeholder='+254712345678'
+                      />
+                      {friendlies[index].length > 2 &&
+                        !friendlies[index].startsWith('0x') && (
+                          <Button
+                            onClick={() => lookup(index)}
+                            variant='default'
+                          >
+                            Lookup
+                          </Button>
+                        )}
+                    </div>
+                  ))}
+                  <button
+                    onClick={() =>  AddFriendliesToPool()}
+                    className='self-start px-2 py-2 bg-prosperity border-black border'
+                  >
+                    + Add Friend
+                  </button>
                 </div>
               )}
             </div>
@@ -343,9 +434,19 @@ const PoolDetails = () => {
           <CardContent>
             <div className='flex flex-col w-full py-4'>
               {selectedPool.isRestrictedPool === true && (
-                <p className='py-2 font-semibold'>
-                  You cannot contribute to this pool.
-                </p>
+                <>
+                  <p className='py-2 font-semibold'>
+                    You cannot contribute to this pool.
+                  </p>
+                  <Button
+                    className='disabled:bg-gray-700 '
+                    variant='default'
+                    onClick={() => AddContributionToPool()}
+                    disabled
+                  >
+                    Contribute
+                  </Button>
+                </>
               )}
               {selectedPool.isRestrictedPool === false &&
                 selectedPool.participants.includes(
@@ -403,7 +504,11 @@ const PoolDetails = () => {
                   <p className='py-2 font-semibold'>
                     You cannot claim this turn.
                   </p>
-                  <Button className='' variant='secondary' disabled>
+                  <Button
+                    className='disabled:bg-gray-700 '
+                    variant='secondary'
+                    disabled
+                  >
                     Claim Turn
                   </Button>
                 </>
