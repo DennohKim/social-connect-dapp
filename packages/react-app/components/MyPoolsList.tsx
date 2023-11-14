@@ -1,9 +1,10 @@
-import { Pool } from '@/interfaces/types';
+import { Pool, PoolDetails } from '@/interfaces/types';
 import { generateDummyData } from '@/lib/data';
 import React, { useEffect, useState } from 'react';
-import { PoolCard } from './PoolCard';
 import { getPoolsData } from '@/data/pools';
-import { useAccount } from 'wagmi';
+import { useAccount, useContractRead } from 'wagmi';
+import { SavingsPoolABI2, SavingsPoolAddress2 } from '@/constants/constants';
+import { MyPoolCard } from './MyPoolCard';
 
 const MyPoolsList = () => {
 	const { address } = useAccount();
@@ -17,12 +18,31 @@ const MyPoolsList = () => {
     setMyPools(ownedPools);
   }, [address]);
 
+   const {
+     data: mySavingsPool,
+     isError,
+     isLoading,
+   } = useContractRead({
+     address: SavingsPoolAddress2,
+     abi: SavingsPoolABI2,
+     functionName: 'getOwnerSavingPools',
+	 args: [address],
+   });
+
+   console.log('poolsData', typeof mySavingsPool);
+
   return (
-    <div>
-      {myPools.map((pool, index) => (
-        <PoolCard key={index} pool={pool} />
-      ))}
-    </div>
+    <>
+      {isLoading ? (
+        <p>Data Loading...</p>
+      ) : Array.isArray(mySavingsPool) ? (
+        mySavingsPool.map((pool: PoolDetails) => (
+          <MyPoolCard key={pool.poolID} pool={pool} />
+        ))
+      ) : (
+        <p>No data available</p>
+      )}
+    </>
   );
 };
 

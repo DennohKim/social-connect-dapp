@@ -218,6 +218,12 @@ const PoolDetails = () => {
                       : 'Not Restricted'}
                   </div>{' '}
                 </div>{' '}
+                <div className='flex flex-col space-y-1'>
+                  <h2 className='font-semibold text-sm'>Pool Balance</h2>
+                  <h2 className='font-normal self-end'>
+                    {ethers.utils.formatEther(selectedPool._poolBalance)} cUSD
+                  </h2>
+                </div>
               </div>
               <div className='flex justify-between items-center'>
                 <div className='flex flex-col space-y-1'>
@@ -290,7 +296,7 @@ const PoolDetails = () => {
               <div className='flex justify-between items-center pt-4'>
                 <div className='flex flex-col space-y-1.5'>
                   <div className='flex justify-between space-x-16 mb-2 w-full'>
-                    <p className='font-semibold'>Participant</p>
+                    <p className='font-semibold'>Participants</p>
                     {/* <p className='font-semibold self-end'>Has Received</p> */}
                   </div>
                   {selectedPool.participants.map((participant, index) => (
@@ -312,14 +318,17 @@ const PoolDetails = () => {
               </div>
               {selectedPool.isRestrictedPool === true && (
                 <div>
-                  <Label htmlFor='minipay phone number' className='text-gray-700'>
+                  <Label
+                    htmlFor='minipay phone number'
+                    className='text-gray-700'
+                  >
                     Add a Friend (Use their minipay phone number)
                   </Label>
                   <Input
                     type='text'
                     name='minipay phone number'
                     className='my-2'
-					placeholder='+254712345678'
+                    placeholder='+254712345678'
                   />
                 </div>
               )}

@@ -102,7 +102,7 @@ export default function Header() {
                 href='/my_pools'
                 className='block border-l-4 border-black py-2 pl-3 pr-4 text-base font-medium text-black'
               >
-                Home
+                My Pools
               </Disclosure.Button>
               {/* Add here your custom menu elements */}
             </div>

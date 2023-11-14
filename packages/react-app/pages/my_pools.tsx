@@ -14,17 +14,7 @@ export default function MyPools() {
     }
   }, [address, isConnected]);
 
-   const {
-     data: savingsPool,
-     isError,
-     isLoading,
-   } = useContractRead({
-     address: SavingsPoolAddress2,
-     abi: SavingsPoolABI2,
-     functionName: 'getAllSavingPools',
-   });
-
-   console.log('poolsData', typeof savingsPool);
+  
 
 
   return (
