@@ -132,10 +132,10 @@ export function MyPoolCard({ pool }: PoolCardProps) {
                 <h2 className='font-semibold text-sm'>Status</h2>
                 <div
                   className={`text-sm font-semibold ${
-                    pool.active ? 'text-red-600' : 'text-green-600'
+                    pool.active === false ? 'text-red-600' : 'text-green-600'
                   }`}
                 >
-                  {pool.active ? 'Inactive' : 'Active'}
+                  {pool.active === false ? 'Inactive' : 'Active'}
                 </div>{' '}
               </div>
               <div className='flex flex-col space-y-1.5'>
