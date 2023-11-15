@@ -19,7 +19,7 @@ const PoolList = () => {
     functionName: 'getAllSavingPools',
   });
 
-  console.log('poolsData', typeof savingsPool);
+  console.log('poolsData', savingsPool);
 
  
 
