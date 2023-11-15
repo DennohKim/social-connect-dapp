@@ -102,7 +102,7 @@ const PoolDetails = () => {
 
   const approveCUSDToJoinPool = async () => {
     if (walletClient) {
-      let createToast = toast.loading('Approving ...', {
+      let createToast = toast.loading('Approving cUSD Transfer...', {
         duration: 15000,
         position: 'top-center',
       });
@@ -421,20 +421,20 @@ const PoolDetails = () => {
 
                   {friendlies.map((friendly, index) => (
                     <div key={index} className='flex flex-col space-x-2'>
-                      <div className='flex flex-col space-x-5'>
+                      <div className='flex flex-col  space-y-5'>
                         <Input
                           onChange={({ target }) =>
                             addFriendlies(index, target.value)
                           }
-                          value={friendly[index]}
+                          value={friendlies[index]}
                           className='my-2'
                           placeholder='+254712345678'
                         />
                         <Button
                           onClick={() => AddFriendliesToPool()}
-                          className='self-start px-2 py-2 bg-prosperity border-black border'
+                          className='self-start px-2 py-2 my-2 text-white border-black border'
                         >
-                          Add a Friend
+                          Submit Friend
                         </Button>
                       </div>
 

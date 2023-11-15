@@ -6,7 +6,7 @@ import { AuthenticationMethod } from '@celo/identity/lib/odis/query';
 import { providers, Wallet } from 'ethers';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const MINIPAY_ISSUER_ADDRESS = '0x7888612486844Bb9BE598668081c59A9f7367FBc';
+const MINIPAY_ISSUER_ADDRESS = '0x65E28C9C4Ef1a756d8df1c507b7A84eFcF606fd4';
 
 // Define the response type for the lookup function
 export type LookupResponse = {
