@@ -24,6 +24,7 @@ import {
 import { ethers } from 'ethers';
 import toast from 'react-hot-toast';
 import { LookupResponse } from './api/lookup';
+import { Separator } from '@/components/ui/separator';
 
 const PoolDetails = () => {
   const router = useRouter();
@@ -88,7 +89,10 @@ const PoolDetails = () => {
           abi: CusdAbi,
           address: cUSDContractAddress,
           functionName: 'approve',
-          args: [SavingsPoolAddress2, selectedPool?.contributionPerParticipant],
+          args: [
+            SavingsPoolAddress2,
+            Number(selectedPool?.contributionPerParticipant) * 2,
+          ],
         });
         const txhash = await publicClient.waitForTransactionReceipt({ hash });
 
@@ -436,6 +440,13 @@ const PoolDetails = () => {
                         >
                           Submit Friend
                         </Button>
+                        <Button
+                          onClick={() => addFrendliesField()}
+                          className='self-start px-2 py-2 bg-prosperity border-black border'
+                          variant='secondary'
+                        >
+                          + Add Friend
+                        </Button>
                       </div>
 
                       {friendlies[index].length > 2 &&
@@ -449,13 +460,6 @@ const PoolDetails = () => {
                         )}
                     </div>
                   ))}
-                  <Button
-                    onClick={() => addFrendliesField()}
-                    className='self-start px-2 py-2 bg-prosperity border-black border'
-                    variant='secondary'
-                  >
-                    + Add Friend
-                  </Button>
                 </div>
               )}
             </div>
@@ -468,52 +472,118 @@ const PoolDetails = () => {
         <Card>
           <CardContent>
             <div className='flex flex-col w-full py-4'>
-              {selectedPool.isRestrictedPool === true && (
-                <>
-                  <p className='py-2 font-semibold'>
-                    You cannot contribute to this pool.
-                  </p>
-                  <Button
-                    className='disabled:bg-gray-700 '
-                    variant='default'
-                    onClick={() => AddContributionToPool()}
-                    disabled
-                  >
-                    Contribute
-                  </Button>
-                </>
-              )}
-              {selectedPool.isRestrictedPool === false &&
-                selectedPool.participants.includes(
-                  address as `0x${string}`
-                ) && (
-                  <div className='flex flex-col space-y-1'>
+              {address &&
+                selectedPool.isRestrictedPool === true &&
+                !selectedPool.participants.includes(address as `0x${string}`) && (
+                  <>
+                    <p className='py-2 font-semibold'>
+                      You cannot contribute to this pool.
+                    </p>
                     <Button
-                      className=''
+                      className='disabled:bg-gray-700 '
                       variant='default'
                       onClick={() => AddContributionToPool()}
+                      disabled
                     >
                       Contribute
                     </Button>
-                  </div>
+                  </>
                 )}
+              {(address &&
+                selectedPool.participants.length ==
+                  selectedPool.maxParticipants) ||
+                (selectedPool.active === false && (
+                  <>
+                    <p className='py-2 font-semibold'>
+                      You cannot contribute to this pool.
+                    </p>
+                    <Button
+                      className='disabled:bg-gray-700 '
+                      variant='default'
+                      onClick={() => AddContributionToPool()}
+                      disabled
+                    >
+                      Contribute
+                    </Button>
+                  </>
+                ))}
+              {address &&
+                selectedPool.isRestrictedPool === false &&
+                selectedPool.participants.includes(address as `0x${string}`) &&
+                selectedPool.active === true && (
+                  <>
+                    <p className='py-2 font-semibold'>
+                      Contribute to the pool.
+                    </p>
+                    <div className='flex flex-col space-y-1'>
+                      <Button
+                        className=''
+                        variant='default'
+                        onClick={() => AddContributionToPool()}
+                      >
+                        Contribute
+                      </Button>
+                    </div>
+                  </>
+                )}
+
+              <Separator className='my-4' />
+
+              {address &&
+              !selectedPool.isRestrictedPool &&
+              !selectedPool.participants.includes(address as `0x${string}`) &&
+              selectedPool.participants.length <
+                selectedPool.maxParticipants ? (
+                <div className='flex flex-col space-y-1'>
+                  <p className='py-2 font-semibold'>
+                    Join to contribute to this pool.
+                  </p>
+                  <Button
+                    className=''
+                    variant='default'
+                    onClick={() => joinSavingsPool()}
+                  >
+                    Join Pool
+                  </Button>
+                </div>
+              ) : (
+                <div className='flex flex-col space-y-1'>
+                  <p className='py-2 font-semibold'>
+                    You cannot join this pool or You are already a member.
+                  </p>
+                  <Button
+                    className='disabled:bg-gray-700'
+                    variant='default'
+                    onClick={() => joinSavingsPool()}
+                    disabled={
+                      selectedPool.participants.length >=
+                        selectedPool.maxParticipants ||
+                      selectedPool.isRestrictedPool == true ||
+                      selectedPool.participants.includes(
+                        address as `0x${string}`
+                      )
+                    }
+                  >
+                    Join Pool
+                  </Button>
+                </div>
+              )}
               {selectedPool.isRestrictedPool === false &&
+                selectedPool.maxParticipants ==
+                  selectedPool.participants.length &&
                 !selectedPool.participants.includes(
                   address as `0x${string}`
                 ) && (
-                  <div className='flex flex-col space-y-1'>
-                    <p className='py-2 font-semibold'>
-                      Join to contribute to this pool.
-                    </p>
-                    <Button
-                      className=''
-                      variant='default'
-                      onClick={() => joinSavingsPool()}
-                    >
-                      Join Pool
-                    </Button>
-                  </div>
+                  <p className='text-sm py-2 text-gray-600'>
+                    This savings pool is full.
+                  </p>
                 )}
+              {selectedPool.isRestrictedPool === true && (
+                <p className='text-sm py-2 text-gray-600'>
+                  This is a restricted pool. Only friendlies of the owner can
+                  join.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
