@@ -472,25 +472,9 @@ const PoolDetails = () => {
         <Card>
           <CardContent>
             <div className='flex flex-col w-full py-4'>
-              {address && selectedPool.isRestrictedPool === true && (
-                <>
-                  <p className='py-2 font-semibold'>
-                    You cannot contribute to this pool.
-                  </p>
-                  <Button
-                    className='disabled:bg-gray-700 '
-                    variant='default'
-                    onClick={() => AddContributionToPool()}
-                    disabled
-                  >
-                    Contribute
-                  </Button>
-                </>
-              )}
               {address &&
-                selectedPool.participants.length ==
-                  selectedPool.maxParticipants &&
-                selectedPool.active === false && (
+                selectedPool.isRestrictedPool === true &&
+                !selectedPool.participants.includes(address as `0x${string}`) && (
                   <>
                     <p className='py-2 font-semibold'>
                       You cannot contribute to this pool.
@@ -505,6 +489,24 @@ const PoolDetails = () => {
                     </Button>
                   </>
                 )}
+              {(address &&
+                selectedPool.participants.length ==
+                  selectedPool.maxParticipants) ||
+                (selectedPool.active === false && (
+                  <>
+                    <p className='py-2 font-semibold'>
+                      You cannot contribute to this pool.
+                    </p>
+                    <Button
+                      className='disabled:bg-gray-700 '
+                      variant='default'
+                      onClick={() => AddContributionToPool()}
+                      disabled
+                    >
+                      Contribute
+                    </Button>
+                  </>
+                ))}
               {address &&
                 selectedPool.isRestrictedPool === false &&
                 selectedPool.participants.includes(address as `0x${string}`) &&
@@ -569,7 +571,9 @@ const PoolDetails = () => {
               {selectedPool.isRestrictedPool === false &&
                 selectedPool.maxParticipants ==
                   selectedPool.participants.length &&
-                !selectedPool.participants.includes(address as `0x${string}`) &&(
+                !selectedPool.participants.includes(
+                  address as `0x${string}`
+                ) && (
                   <p className='text-sm py-2 text-gray-600'>
                     This savings pool is full.
                   </p>
