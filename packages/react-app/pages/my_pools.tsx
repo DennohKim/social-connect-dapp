@@ -1,9 +1,10 @@
 import MyPoolsList from '@/components/MyPoolsList';
 import CreatePoolForm from '@/components/modals/CreatePool';
+import { SavingsPoolABI2, SavingsPoolAddress2 } from '@/constants/constants';
 import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useContractRead } from 'wagmi';
 
-export default function Home() {
+export default function MyPools() {
   const [userAddress, setUserAddress] = useState('');
   const { address, isConnected } = useAccount();
 
@@ -12,6 +13,9 @@ export default function Home() {
       setUserAddress(address);
     }
   }, [address, isConnected]);
+
+  
+
 
   return (
     <>

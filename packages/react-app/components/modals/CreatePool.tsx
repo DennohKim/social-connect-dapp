@@ -1,18 +1,25 @@
-import { ethers } from 'ethers';
-import { useAccount } from 'wagmi';
+import { ethers, Contract, BigNumber } from 'ethers';
+import { useAccount, useWalletClient, usePublicClient } from 'wagmi';
 import { useDebounce } from 'use-debounce';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useContractSend } from '@/hooks/useContractWrite';
 import { waitForTransaction } from '@wagmi/core';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useContractApprove } from '@/hooks/useApprove';
+import { SavingsPoolAddress2 } from '@/constants/constants';
+import { SavingsPoolABI2 } from '@/constants/constants';
+import { CusdAbi } from '@/constants/constants';
+import { cUSDContractAddress } from '@/constants/constants';
 
 const CreatePoolForm = () => {
   const { address } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  const publicClient = usePublicClient();
 
   const router = useRouter();
-
+  const [provider, setProvider] = useState<ethers.providers.Web3Provider>();
+  const [signer, setSigner] = useState<ethers.providers.JsonRpcSigner>();
   const [visible, setVisible] = useState(false);
   const [poolName, setPoolName] = useState<string>('');
   const [maxParticipants, setMaxParticipants] = useState<string | number>(0);
@@ -61,6 +68,74 @@ const CreatePoolForm = () => {
     ]
   );
 
+  //approve
+  const approveCUSDCTokens = async () => {
+    if (walletClient) {
+      let createToast = toast.loading('Approving ...', {
+        duration: 15000,
+        position: 'top-center',
+      });
+      try {
+        const amountToContribute: BigNumber = ethers.utils.parseEther(
+          debouncedContributionPerParticipant.toString()
+        );
+        let hash = await walletClient.writeContract({
+          abi: CusdAbi,
+          address: cUSDContractAddress,
+          functionName: 'approve',
+          args: [SavingsPoolAddress2, amountToContribute],
+        });
+        const txhash = await publicClient.waitForTransactionReceipt({ hash });
+
+        toast.success('Transfer Approved!', { id: createToast });
+        return txhash;
+      } catch (e) {
+        toast.error('Something Went Wrong!', { id: createToast });
+      }
+    }
+  };
+
+  //useWalletClient minipay
+  const createSavingPools = async () => {
+    if (walletClient) {
+      try {
+        const amountToContribute: BigNumber = ethers.utils.parseEther(
+          debouncedContributionPerParticipant.toString()
+        );
+
+        const txhash = await approveCUSDCTokens();
+        if (txhash) {
+          try {
+            let createToast = toast.loading('Creating Saving Pool', {
+              duration: 15000,
+              position: 'top-center',
+            });
+
+            let hash = await walletClient.writeContract({
+              abi: SavingsPoolABI2,
+              address: SavingsPoolAddress2,
+              functionName: 'createPool',
+              args: [
+                debouncedPoolName,
+                debouncedMaxParticipants,
+                amountToContribute,
+                debouncedDurationPerTurn,
+                debouncedIsRestricted,
+              ],
+            });
+            await publicClient.waitForTransactionReceipt({ hash });
+            toast.success('Saving Pool Created!', { id: createToast });
+			setVisible(false);
+			clearForm();
+          } catch (e) {
+            toast.error('Something Went Wrong!');
+          }
+        }
+      } catch (e) {
+        toast.error('Something Went Wrong!');
+      }
+    }
+  };
 
   const handleCreatePool = async () => {
     if (!createPool || !approveSpending) {
@@ -82,7 +157,7 @@ const CreatePoolForm = () => {
     // console.log('Is Restricted:', debouncedIsRestricted);
     // console.log('Duration Per Turn:', debouncedDurationPerTurn);
 
-    const {hash: approveHash} = await approveSpending();
+    const { hash: approveHash } = await approveSpending();
     await waitForTransaction({ confirmations: 1, hash: approveHash });
 
     setLoading('Creating...');
@@ -133,7 +208,7 @@ const CreatePoolForm = () => {
             className='fixed z-40 overflow-y-auto top-0 w-full left-0 flex items-center justify-center'
             id='modal'
           >
-            <form onSubmit={addSavingsPool}>
+            <div>
               <div className='flex items-center justify-center min-height-100vh pt-4 px-4 pb-20 text-center sm:block sm:p-0'>
                 <div className='fixed inset-0 transition-opacity'>
                   <div className='absolute inset-0 bg-gray-900 opacity-75' />
@@ -232,8 +307,11 @@ const CreatePoolForm = () => {
                       Cancel
                     </button>
                     <button
-                      type='submit'
-                        disabled={!!loading || !createPool}
+                      type='button'
+                      onClick={() => {
+                        createSavingPools();
+                      }}
+                      // disabled={!!loading || !createPool}
 
                       className='py-2 px-4 bg-primary text-white rounded hover:primary mr-2'
                     >
@@ -242,7 +320,7 @@ const CreatePoolForm = () => {
                   </div>
                 </div>
               </div>
-            </form>
+            </div>
           </div>
         )}
       </div>

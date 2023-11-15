@@ -22,7 +22,7 @@ interface PoolCardProps {
   pool: PoolDetails;
 }
 
-export function PoolCard({ pool }: PoolCardProps) {
+export function MyPoolCard({ pool }: PoolCardProps) {
   const { data: walletClient } = useWalletClient();
 
   const publicClient = usePublicClient();
@@ -147,9 +147,6 @@ export function PoolCard({ pool }: PoolCardProps) {
             </div>
           </div>
         </CardContent>
-        <CardFooter className='flex justify-end'>
-          <Button onClick={() => joinSavingsPool()}>Join Pool</Button>
-        </CardFooter>
       </Card>
     </Link>
   );

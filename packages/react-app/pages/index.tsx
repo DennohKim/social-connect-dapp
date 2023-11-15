@@ -13,6 +13,8 @@ export default function Home() {
     }
   }, [address, isConnected]);
 
+  
+
   return (
     <>
       <div className='flex justify-between items-end'>

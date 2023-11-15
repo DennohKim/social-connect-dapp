@@ -14,3 +14,22 @@ export interface Pool {
   isActive: boolean;
   isRestrictedPool: boolean;
 }
+
+export interface PoolDetails {
+  owner: string;
+  name: string;
+  userTurnAddress:string;
+  contributionPerParticipant: number;
+  maxParticipants: number;
+  durationPerTurn: number;
+  currentTurn: number;
+  active: boolean;
+  participants: string[];
+  _poolBalance:number;
+  isRestrictedPool: boolean;
+  userContibutionNumber:number;  
+  startTime: number;
+  poolID: number;
+}
+
+
