@@ -224,7 +224,7 @@ const PoolDetails = () => {
   async function lookup(index: number) {
     let lookupToast = toast.loading('Looking up the address');
     let response: Response = await fetch(
-      `/api/socialconnect/lookup?${new URLSearchParams({
+      `/api/lookup?${new URLSearchParams({
         handle: friendlies[index],
       })}`,
       {
