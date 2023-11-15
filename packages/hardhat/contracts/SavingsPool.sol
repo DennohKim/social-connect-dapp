@@ -331,7 +331,7 @@ contract ChamaPool {
         turn[_poolId].endTime = time;
         turn[_poolId].currentClaimant = user;
     }
-
+//get this done
     //getall
     function getOwnerSavingPools(
         address ownerAddress
