@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { Pool, PoolDetails } from '@/interfaces/types';
 import { getPoolsData } from '@/data/pools';
 import { convertBlockTimestampToDate, truncateAddr } from '@/lib/utils';
@@ -156,6 +156,9 @@ const PoolDetails = () => {
               `You have contributed to ${selectedPool?.name} Saving Pool!`,
               { id: createToast }
             );
+            setTimeout(() => {
+              router.refresh();
+            }, 10000);
           } catch (e) {
             toast.error('Something Went Wrong!');
           }
@@ -189,6 +192,9 @@ const PoolDetails = () => {
               `You have joined ${selectedPool?.name} Saving Pool!`,
               { id: createToast }
             );
+            setTimeout(() => {
+              router.refresh();
+            }, 10000);
           } catch (e) {
             toast.error('Something Went Wrong!');
           }
@@ -218,6 +224,9 @@ const PoolDetails = () => {
           `You have claimed your turn in ${selectedPool?.name} Saving Pool!`,
           { id: createToast }
         );
+        setTimeout(() => {
+          router.refresh();
+        }, 10000);
       } catch (e) {
         toast.error('Something Went Wrong!');
       }
@@ -268,6 +277,9 @@ const PoolDetails = () => {
           `You have added a friend to ${selectedPool?.name} Saving Pool!`,
           { id: createToast }
         );
+        setTimeout(() => {
+          router.refresh();
+        }, 10000);
       } catch (e) {
         toast.error('Something Went Wrong!');
       }
