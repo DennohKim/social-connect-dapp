@@ -26,6 +26,9 @@ export default function Home() {
         </div>
       </div>
 	  <div className='py-6'>
+		{isConnected && (
+			<p>My walllet address: {" "}{address}</p>
+		)}
 		<PoolList/>
 	  </div>
     </>
