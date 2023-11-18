@@ -7,7 +7,7 @@ import { providers, Wallet } from 'ethers';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { newKit } from "@celo/contractkit";
 
-const MINIPAY_ISSUER_ADDRESS = '0xF53e245F5e82586245f0ea944Fd52eAacB5C66C8';
+const MINIPAY_ISSUER_ADDRESS = '0xC004b822987741b69c9f87CC5F3DC40877527421';
 
 // Define the response type for the lookup function
 export type LookupResponse = {
