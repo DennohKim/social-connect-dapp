@@ -18,7 +18,7 @@ export const fontSans = FontSans({
 });
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID as string;
 const { chains, publicClient } = configureChains(
-  [Alfajores],
+  [Alfajores,Celo],
   [publicProvider()]
 );
 
