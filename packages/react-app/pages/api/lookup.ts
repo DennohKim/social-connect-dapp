@@ -5,6 +5,7 @@ import { IdentifierPrefix } from '@celo/identity/lib/odis/identifier';
 import { AuthenticationMethod } from '@celo/identity/lib/odis/query';
 import { providers, Wallet } from 'ethers';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { newKit } from "@celo/contractkit";
 
 const MINIPAY_ISSUER_ADDRESS = '0xC004b822987741b69c9f87CC5F3DC40877527421';
 
@@ -27,13 +28,14 @@ export default async function lookup(
         process.env.ISSUER_PRIVATE_KEY as string,
         new providers.JsonRpcProvider(RPC)
       );
+      const kit = await newKit("wss://forno.celo.org/ws");
 
       // Create a new instance of the SocialConnectIssuer
       const issuer = new SocialConnectIssuer(wallet, {
         authenticationMethod: AuthenticationMethod.ENCRYPTION_KEY,
         // Use the recommended authentication method to save on ODIS quota
         // For steps to set up DEK, refer to the provided GitHub link - https://github.com/celo-org/social-connect/blob/main/docs/key-setup.md
-        rawKey: process.env.DEK_PRIVATE_KEY as string,
+        rawKey:process.env.DEK_PRIVATE_KEY as string
       });
 
       // Extract the identifier and its type from the request query
@@ -51,7 +53,7 @@ export default async function lookup(
         identifierType,
         issuerAddresses
       );
-
+      console.log("look",lookupResponse)
       // Return the lookup response with a 200 status code
       return res.status(200).json(lookupResponse);
     default:

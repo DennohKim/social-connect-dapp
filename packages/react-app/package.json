@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@celo/abis": "^9.0.6",
+    "@celo/contractkit": "^5.1.0",
     "@celo/identity": "^5.1.0",
     "@celo/rainbowkit-celo": "^1.0.1",
     "@faker-js/faker": "^8.2.0",
@@ -40,7 +41,8 @@
     "tailwindcss-animate": "^1.0.7",
     "use-debounce": "^9.0.4",
     "viem": "^0.3.30",
-    "wagmi": "^1.2"
+    "wagmi": "^1.2",
+    "web3": "1.10"
   },
   "devDependencies": {
     "@types/node": "^20.2.1",
