@@ -125,8 +125,11 @@ const CreatePoolForm = () => {
             });
             await publicClient.waitForTransactionReceipt({ hash });
             toast.success('Saving Pool Created!', { id: createToast });
-			setVisible(false);
-			clearForm();
+            setVisible(false);
+            clearForm();
+            setTimeout(() => {
+              router.refresh();
+            }, 8000);
           } catch (e) {
             toast.error('Something Went Wrong!');
           }
