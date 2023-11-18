@@ -14,7 +14,7 @@ export const ManagementContractABI = ManagementABI.abi
 // forge create --rpc-url https://alfajores-forno.celo-testnet.org  --constructor-args 0x7897CC6E4C544679cB40Dd9Ad4BD2A414812072b   --private-key <key>
 //  src/SavingsPool.sol:ChamaPool
 
-export const ManagementAddress2 = '0x93b63165Ae71422D4567a6abB39860777B8A62Dd'
+export const ManagementAddress2 = '0x7897CC6E4C544679cB40Dd9Ad4BD2A414812072b';
 export const SavingsPoolAddress2 ="0x336907f7e4475c0680989Eea73111Ee4B48770dC"; //'0xEc6Db94C1697EB98Fe9E74aD23972E3c1377C1cD';
 export const cUSDContractAddress ="0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
 
