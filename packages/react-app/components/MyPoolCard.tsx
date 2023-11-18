@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ethers } from 'ethers';
+import { ethers,Contract } from 'ethers';
 
 import { Button } from '@/components/ui/button';
 import {

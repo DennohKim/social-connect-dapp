@@ -116,28 +116,42 @@ const CreatePoolForm = () => {
               position: 'top-center',
             });
 
-            let hash = await walletClient.writeContract({
-              abi: SavingsPoolABI2,
-              address: SavingsPoolAddress2,
-              functionName: 'createPool',
-              args: [
-                debouncedPoolName,
-                debouncedMaxParticipants,
-                amountToContribute,
-                debouncedDurationPerTurn,
-                debouncedIsRestricted,
-              ],
-            });
-            await publicClient.waitForTransactionReceipt({ hash });
-            toast.success('Saving Pool Created!', { id: createToast });
-            setVisible(false);
-            clearForm();
-            setTimeout(() => {
-              router.refresh();
-            }, 8000);
+            // let hash = await walletClient.writeContract({
+            //   abi: SavingsPoolABI2,
+            //   address: SavingsPoolAddress2,
+            //   functionName: 'createPool',
+            //   args: [
+            //     debouncedPoolName,
+            //     debouncedMaxParticipants,
+            //     amountToContribute,
+            //     debouncedDurationPerTurn,
+            //     debouncedIsRestricted,
+            //   ],
+            // });
+            // await publicClient.waitForTransactionReceipt({ hash });
+            if (window.ethereum || window.ethereum.isMiniPay) {
+              const provider = new ethers.providers.Web3Provider(window.ethereum);
+              const signer = await provider.getSigner(address);
+              const cusdcContract = new Contract(SavingsPoolAddress2,SavingsPoolABI2,signer);
+              const tx = await cusdcContract.createPool(debouncedPoolName,
+                   debouncedMaxParticipants,
+                    amountToContribute,
+                    debouncedDurationPerTurn,
+                    debouncedIsRestricted,);
+              const txhash= await tx.wait();
+              toast.success('Saving Pool Created!', { id: createToast });
+              setVisible(false);
+              clearForm();
+              setTimeout(() => {
+                router.refresh();
+              }, 8000);
+            
+            }
           } catch (e) {
             toast.error('Something Went Wrong!');
           }
+           
+           
         }
       } catch (e) {
         toast.error('Something Went Wrong!');

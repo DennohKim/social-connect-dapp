@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ethers } from 'ethers';
+import { ethers,Contract } from 'ethers';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +14,7 @@ import { Pool, PoolDetails } from '@/interfaces/types';
 import { truncateAddr } from '@/lib/utils';
 import { poll } from 'ethers/lib/utils';
 import Link from 'next/link';
-import { usePublicClient, useWalletClient } from 'wagmi';
+import { usePublicClient, useWalletClient,useAccount } from 'wagmi';
 import {
   CusdAbi,
   SavingsPoolABI2,
@@ -28,6 +28,7 @@ interface PoolCardProps {
 }
 
 export function PoolCard({ pool }: PoolCardProps) {
+  const {address} = useAccount();
   const { data: walletClient } = useWalletClient();
 
   const publicClient = usePublicClient();
@@ -40,16 +41,22 @@ export function PoolCard({ pool }: PoolCardProps) {
         position: 'top-center',
       });
       try {
-        let hash = await walletClient.writeContract({
-          abi: CusdAbi,
-          address: cUSDContractAddress,
-          functionName: 'approve',
-          args: [SavingsPoolAddress2, pool?.contributionPerParticipant],
-        });
-        const txhash = await publicClient.waitForTransactionReceipt({ hash });
+        // let hash = await walletClient.writeContract({
+        //   abi: CusdAbi,
+        //   address: cUSDContractAddress,
+        //   functionName: 'approve',
+        //   args: [SavingsPoolAddress2, pool?.contributionPerParticipant],
+        // });
+        // const txhash = await publicClient.waitForTransactionReceipt({ hash });
+        if (window.ethereum || window.ethereum.isMiniPay) {
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const signer = await provider.getSigner(address);
+          const cusdcContract = new Contract(cUSDContractAddress,CusdAbi,signer);
+          const tx = await cusdcContract.approve(SavingsPoolAddress2, pool?.contributionPerParticipant);
+          const txhash= await tx.wait();
 
         toast.success('Transfer Approved!', { id: createToast });
-        return txhash;
+        return txhash;}
       } catch (e) {
         toast.error('Something Went Wrong!', { id: createToast });
       }
@@ -68,16 +75,22 @@ export function PoolCard({ pool }: PoolCardProps) {
               position: 'top-center',
             });
 
-            let hash = await walletClient.writeContract({
-              abi: SavingsPoolABI2,
-              address: SavingsPoolAddress2,
-              functionName: 'joinPool',
-              args: [pool?.poolID],
-            });
-            await publicClient.waitForTransactionReceipt({ hash });
+            // let hash = await walletClient.writeContract({
+            //   abi: SavingsPoolABI2,
+            //   address: SavingsPoolAddress2,
+            //   functionName: 'joinPool',
+            //   args: [pool?.poolID],
+            // });
+            // await publicClient.waitForTransactionReceipt({ hash });
+            if (window.ethereum || window.ethereum.isMiniPay) {
+              const provider = new ethers.providers.Web3Provider(window.ethereum);
+              const signer = await provider.getSigner(address);
+              const cusdcContract = new Contract(SavingsPoolAddress2,SavingsPoolABI2,signer);
+              const tx = await cusdcContract.joinPool(pool?.poolID);
+              const txhash= await tx.wait();
             toast.success(`You have joined ${pool?.name} Saving Pool!`, {
               id: createToast,
-            });
+            });}
           } catch (e) {
             toast.error('Something Went Wrong!');
           }
