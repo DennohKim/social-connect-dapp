@@ -76,16 +76,21 @@ const CreatePoolForm = () => {
         position: 'top-center',
       });
       try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = await provider.getSigner(address);
         const amountToContribute: BigNumber = ethers.utils.parseEther(
           debouncedContributionPerParticipant.toString()
         );
-        let hash = await walletClient.writeContract({
-          abi: CusdAbi,
-          address: cUSDContractAddress,
-          functionName: 'approve',
-          args: [SavingsPoolAddress2, amountToContribute],
-        });
-        const txhash = await publicClient.waitForTransactionReceipt({ hash });
+        // let hash = await walletClient.writeContract({
+        //   abi: CusdAbi,
+        //   address: cUSDContractAddress,
+        //   functionName: 'approve',
+        //   args: [SavingsPoolAddress2, amountToContribute],
+        // });
+        // const txhash = await publicClient.waitForTransactionReceipt({ hash });
+        const cusdcContract = new Contract(cUSDContractAddress,CusdAbi,signer);
+        const tx = await cusdcContract.approve(SavingsPoolAddress2,amountToContribute);
+        const txhash= await tx.wait();
 
         toast.success('Transfer Approved!', { id: createToast });
         return txhash;
