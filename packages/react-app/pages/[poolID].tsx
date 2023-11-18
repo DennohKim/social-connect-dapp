@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { Pool, PoolDetails } from '@/interfaces/types';
 import { getPoolsData } from '@/data/pools';
 import { convertBlockTimestampToDate, truncateAddr } from '@/lib/utils';
@@ -157,7 +157,7 @@ const PoolDetails = () => {
               { id: createToast }
             );
             setTimeout(() => {
-              router.refresh();
+              router.reload();
             }, 10000);
           } catch (e) {
             toast.error('Something Went Wrong!');
@@ -193,7 +193,7 @@ const PoolDetails = () => {
               { id: createToast }
             );
             setTimeout(() => {
-              router.refresh();
+              router.reload();
             }, 10000);
           } catch (e) {
             toast.error('Something Went Wrong!');
@@ -225,7 +225,7 @@ const PoolDetails = () => {
           { id: createToast }
         );
         setTimeout(() => {
-          router.refresh();
+          router.reload();
         }, 10000);
       } catch (e) {
         toast.error('Something Went Wrong!');
@@ -278,7 +278,7 @@ const PoolDetails = () => {
           { id: createToast }
         );
         setTimeout(() => {
-          router.refresh();
+          router.reload();
         }, 10000);
       } catch (e) {
         toast.error('Something Went Wrong!');
