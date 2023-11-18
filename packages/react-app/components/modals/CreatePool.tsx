@@ -70,7 +70,7 @@ const CreatePoolForm = () => {
 
   //approve
   const approveCUSDCTokens = async () => {
-    if (walletClient) {
+    if (window.ethereum || window.ethereum.isMiniPay) {
       let createToast = toast.loading('Approving ...', {
         duration: 15000,
         position: 'top-center',
@@ -102,7 +102,7 @@ const CreatePoolForm = () => {
 
   //useWalletClient minipay
   const createSavingPools = async () => {
-    if (walletClient) {
+    if (window.ethereum || window.ethereum.isMiniPay) {
       try {
         const amountToContribute: BigNumber = ethers.utils.parseEther(
           debouncedContributionPerParticipant.toString()
@@ -129,7 +129,7 @@ const CreatePoolForm = () => {
             //   ],
             // });
             // await publicClient.waitForTransactionReceipt({ hash });
-            if (window.ethereum || window.ethereum.isMiniPay) {
+            
               const provider = new ethers.providers.Web3Provider(window.ethereum);
               const signer = await provider.getSigner(address);
               const cusdcContract = new Contract(SavingsPoolAddress2,SavingsPoolABI2,signer);
@@ -146,7 +146,7 @@ const CreatePoolForm = () => {
                 router.refresh();
               }, 8000);
             
-            }
+            
           } catch (e) {
             toast.error('Something Went Wrong!');
           }
