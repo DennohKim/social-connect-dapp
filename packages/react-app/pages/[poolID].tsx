@@ -24,7 +24,7 @@ import {
 import { ethers } from 'ethers';
 import toast from 'react-hot-toast';
 import { LookupResponse } from './api/lookup';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from '@radix-ui/react-select';
 
 const PoolDetails = () => {
   const router = useRouter();
@@ -38,6 +38,8 @@ const PoolDetails = () => {
   const { poolID } = router.query;
 
   const [selectedPool, setSelectedPool] = useState<PoolDetails>();
+  const [userAddress, setUserAddress] = useState<string>('');
+  console.log('userAddress', userAddress);
 
   const [friendlies, setFriendlies] = useState<string[]>([]);
 
@@ -89,10 +91,7 @@ const PoolDetails = () => {
           abi: CusdAbi,
           address: cUSDContractAddress,
           functionName: 'approve',
-          args: [
-            SavingsPoolAddress2,
-            Number(selectedPool?.contributionPerParticipant) * 2,
-          ],
+          args: [SavingsPoolAddress2, selectedPool?.contributionPerParticipant],
         });
         const txhash = await publicClient.waitForTransactionReceipt({ hash });
 
@@ -261,12 +260,12 @@ const PoolDetails = () => {
         let hash = await walletClient.writeContract({
           abi: ManagementContractABI2,
           address: ManagementAddress2,
-          functionName: 'setBatchFriendlies',
-          args: [...friendlies],
+          functionName: 'setFriendly',
+          args: [userAddress],
         });
         await publicClient.waitForTransactionReceipt({ hash });
         toast.success(
-          `You have added friends to ${selectedPool?.name} Saving Pool!`,
+          `You have added a friend to ${selectedPool?.name} Saving Pool!`,
           { id: createToast }
         );
       } catch (e) {
@@ -414,54 +413,76 @@ const PoolDetails = () => {
                   ))}
                 </div>{' '}
               </div>
-              {selectedPool.isRestrictedPool === true && (
-                <div className='flex flex-col'>
-                  <Label
-                    htmlFor='minipay phone number'
-                    className='text-gray-700'
-                  >
-                    Add a Friend (Use their minipay phone number)
-                  </Label>
+              {selectedPool.isRestrictedPool === true &&
+                address === selectedPool.owner && (
+                  <>
+                    <p className='text-normal font-semibold'>
+                      Add a Participant to the Pool{' '}
+                    </p>
 
-                  {friendlies.map((friendly, index) => (
-                    <div key={index} className='flex flex-col space-x-2'>
-                      <div className='flex flex-col  space-y-5'>
-                        <Input
-                          onChange={({ target }) =>
-                            addFriendlies(index, target.value)
-                          }
-                          value={friendlies[index]}
-                          className='my-2'
-                          placeholder='+254712345678'
-                        />
-                        <Button
-                          onClick={() => AddFriendliesToPool()}
-                          className='self-start px-2 py-2 my-2 text-white border-black border'
-                        >
-                          Submit Friend
-                        </Button>
-                        <Button
-                          onClick={() => addFrendliesField()}
-                          className='self-start px-2 py-2 bg-prosperity border-black border'
-                          variant='secondary'
-                        >
-                          + Add Friend
-                        </Button>
-                      </div>
+                    <div className='flex flex-col'>
+                      <Label
+                        htmlFor='minipay phone number'
+                        className='text-gray-700'
+                      >
+                        Add a Friend (Use their minipay phone number)
+                      </Label>
 
-                      {friendlies[index].length > 2 &&
-                        !friendlies[index].startsWith('0x') && (
-                          <Button
-                            onClick={() => lookup(index)}
-                            variant='default'
-                          >
-                            Lookup
-                          </Button>
-                        )}
+                      {friendlies.map((friendly, index) => (
+                        <div key={index} className='flex flex-col space-x-2'>
+                          <div className='flex flex-col  space-y-5'>
+                            <Input
+                              onChange={({ target }) =>
+                                addFriendlies(index, target.value)
+                              }
+                              value={friendlies[index]}
+                              className='my-2'
+                              placeholder='+254712345678'
+                            />
+                            {friendlies[index].length > 2 &&
+                              !friendlies[index].startsWith('0x') && (
+                                <Button
+                                  onClick={() => lookup(index)}
+                                  variant='default'
+                                >
+                                  Lookup
+                                </Button>
+                              )}
+                          </div>
+                        </div>
+                      ))}
+
+                      <Button
+                        onClick={() => addFrendliesField()}
+                        className='self-start px-2 py-2 bg-prosperity border-black border'
+                        variant='secondary'
+                      >
+                        + Add Friend
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <Separator className='my-2' />
+                    <div className='flex flex-col space-y-2'>
+                      <Label
+                        htmlFor='minipay phone number'
+                        className='text-gray-700'
+                      >
+                        Add a Friend (Use their wallet address)
+                      </Label>
+                      <Input
+                        onChange={(e) => setUserAddress(e.target.value)}
+                        value={userAddress}
+                        className='my-2'
+                        placeholder='0x0000000'
+                      />
+                      <Button
+                        onClick={() => AddFriendliesToPool()}
+                        className='self-start px-2 py-2 my-2 text-white border-black border'
+                      >
+                        Submit Friend
+                      </Button>
+                    </div>
+                  </>
+                )}
             </div>
           </CardContent>
         </Card>
@@ -472,117 +493,60 @@ const PoolDetails = () => {
         <Card>
           <CardContent>
             <div className='flex flex-col w-full py-4'>
-              {address &&
-                selectedPool.isRestrictedPool === true &&
-                !selectedPool.participants.includes(address as `0x${string}`) && (
-                  <>
-                    <p className='py-2 font-semibold'>
-                      You cannot contribute to this pool.
-                    </p>
-                    <Button
-                      className='disabled:bg-gray-700 '
-                      variant='default'
-                      onClick={() => AddContributionToPool()}
-                      disabled
-                    >
-                      Contribute
-                    </Button>
-                  </>
-                )}
-              {(address &&
-                selectedPool.participants.length ==
-                  selectedPool.maxParticipants) ||
-                (selectedPool.active === false && (
-                  <>
-                    <p className='py-2 font-semibold'>
-                      You cannot contribute to this pool.
-                    </p>
-                    <Button
-                      className='disabled:bg-gray-700 '
-                      variant='default'
-                      onClick={() => AddContributionToPool()}
-                      disabled
-                    >
-                      Contribute
-                    </Button>
-                  </>
-                ))}
-              {address &&
-                selectedPool.isRestrictedPool === false &&
-                selectedPool.participants.includes(address as `0x${string}`) &&
-                selectedPool.active === true && (
-                  <>
-                    <p className='py-2 font-semibold'>
-                      Contribute to the pool.
-                    </p>
-                    <div className='flex flex-col space-y-1'>
-                      <Button
-                        className=''
-                        variant='default'
-                        onClick={() => AddContributionToPool()}
-                      >
-                        Contribute
-                      </Button>
-                    </div>
-                  </>
-                )}
-
-              <Separator className='my-4' />
-
-              {address &&
-              !selectedPool.isRestrictedPool &&
-              !selectedPool.participants.includes(address as `0x${string}`) &&
-              selectedPool.participants.length <
-                selectedPool.maxParticipants ? (
-                <div className='flex flex-col space-y-1'>
+              {/* {selectedPool.isRestrictedPool === true && (
+                <>
                   <p className='py-2 font-semibold'>
-                    Join to contribute to this pool.
+                    You cannot contribute to this pool.
                   </p>
                   <Button
-                    className=''
+                    className='disabled:bg-gray-700 '
                     variant='default'
-                    onClick={() => joinSavingsPool()}
+                    onClick={() => AddContributionToPool()}
+                    disabled
                   >
-                    Join Pool
+                    Contribute
                   </Button>
-                </div>
-              ) : (
-                <div className='flex flex-col space-y-1'>
-                  <p className='py-2 font-semibold'>
-                    You cannot join this pool or You are already a member.
-                  </p>
-                  <Button
-                    className='disabled:bg-gray-700'
-                    variant='default'
-                    onClick={() => joinSavingsPool()}
-                    disabled={
-                      selectedPool.participants.length >=
-                        selectedPool.maxParticipants ||
-                      selectedPool.isRestrictedPool == true ||
-                      selectedPool.participants.includes(
-                        address as `0x${string}`
-                      )
-                    }
-                  >
-                    Join Pool
-                  </Button>
-                </div>
-              )}
-              {selectedPool.isRestrictedPool === false &&
-                selectedPool.maxParticipants ==
-                  selectedPool.participants.length &&
-                !selectedPool.participants.includes(
+                </>
+              )} */}
+              {selectedPool.active === true &&
+                selectedPool.participants.includes(
                   address as `0x${string}`
                 ) && (
-                  <p className='text-sm py-2 text-gray-600'>
-                    This savings pool is full.
-                  </p>
+                  <div className='flex flex-col space-y-1'>
+                    <p className='py-2 font-semibold'>
+                      Contribute to the Savings pool.
+                    </p>
+                    <Button
+                      className=''
+                      variant='default'
+                      onClick={() => AddContributionToPool()}
+                    >
+                      Contribute
+                    </Button>
+                  </div>
                 )}
-              {selectedPool.isRestrictedPool === true && (
-                <p className='text-sm py-2 text-gray-600'>
-                  This is a restricted pool. Only friendlies of the owner can
-                  join.
-                </p>
+              <Separator className='my-2' />
+              {!selectedPool.participants.includes(
+                address as `0x${string}`
+              ) && (
+                <>
+                  <p className='text-gray-500 text-sm py-3'>
+                    You have to be invited by the pool owner in order to join
+                    the pool.
+                  </p>
+                  <div className='flex flex-col space-y-1'>
+                    <p className='py-2 font-semibold'>
+                      Join to contribute to this pool.
+                    </p>
+                    <Button
+                      className=''
+                      variant='default'
+                      onClick={() => joinSavingsPool()}
+                    >
+                      Join Pool
+                    </Button>
+                  </div>
+                </>
               )}
             </div>
           </CardContent>

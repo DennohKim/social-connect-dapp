@@ -15,7 +15,12 @@ import { truncateAddr } from '@/lib/utils';
 import { poll } from 'ethers/lib/utils';
 import Link from 'next/link';
 import { usePublicClient, useWalletClient } from 'wagmi';
-import { CusdAbi, SavingsPoolABI2, SavingsPoolAddress2, cUSDContractAddress } from '@/constants/constants';
+import {
+  CusdAbi,
+  SavingsPoolABI2,
+  SavingsPoolAddress2,
+  cUSDContractAddress,
+} from '@/constants/constants';
 import toast from 'react-hot-toast';
 
 interface PoolCardProps {
@@ -70,10 +75,9 @@ export function PoolCard({ pool }: PoolCardProps) {
               args: [pool?.poolID],
             });
             await publicClient.waitForTransactionReceipt({ hash });
-            toast.success(
-              `You have joined ${pool?.name} Saving Pool!`,
-              { id: createToast }
-            );
+            toast.success(`You have joined ${pool?.name} Saving Pool!`, {
+              id: createToast,
+            });
           } catch (e) {
             toast.error('Something Went Wrong!');
           }
@@ -145,10 +149,22 @@ export function PoolCard({ pool }: PoolCardProps) {
                 </h2>
               </div>
             </div>
+            <div className='flex justify-between items-center'>
+              <div className='flex flex-col space-y-1.5'>
+                <h2 className='font-semibold text-sm'>Total Pool Members</h2>
+                <h2 className='font-normal'>{pool.participants.length}</h2>
+              </div>
+            </div>
           </div>
         </CardContent>
         <CardFooter className='flex justify-end'>
-          <Button onClick={() => joinSavingsPool()}>Join Pool</Button>
+          {pool.participants.length === Number(pool.maxParticipants) || pool.isRestrictedPool === true ? (
+            <Button className='disabled:bg-gray-600 text-white' disabled>
+              Join Pool
+            </Button>
+          ) : (
+            <Button onClick={() => joinSavingsPool()}>Join Pool</Button>
+          )}
         </CardFooter>
       </Card>
     </Link>
