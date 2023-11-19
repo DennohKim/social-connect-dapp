@@ -70,27 +70,22 @@ const CreatePoolForm = () => {
 
   //approve
   const approveCUSDCTokens = async () => {
-    if (window.ethereum || window.ethereum.isMiniPay) {
+    if (walletClient) {
       let createToast = toast.loading('Approving ...', {
         duration: 15000,
         position: 'top-center',
       });
       try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = await provider.getSigner(address);
         const amountToContribute: BigNumber = ethers.utils.parseEther(
           debouncedContributionPerParticipant.toString()
         );
-        // let hash = await walletClient.writeContract({
-        //   abi: CusdAbi,
-        //   address: cUSDContractAddress,
-        //   functionName: 'approve',
-        //   args: [SavingsPoolAddress2, amountToContribute],
-        // });
-        // const txhash = await publicClient.waitForTransactionReceipt({ hash });
-        const cusdcContract = new Contract(cUSDContractAddress,CusdAbi,signer);
-        const tx = await cusdcContract.approve(SavingsPoolAddress2,amountToContribute);
-        const txhash= await tx.wait();
+        let hash = await walletClient.writeContract({
+          abi: CusdAbi,
+          address: cUSDContractAddress,
+          functionName: 'approve',
+          args: [SavingsPoolAddress2, amountToContribute],
+        });
+        const txhash = await publicClient.waitForTransactionReceipt({ hash });
 
         toast.success('Transfer Approved!', { id: createToast });
         return txhash;
@@ -102,7 +97,7 @@ const CreatePoolForm = () => {
 
   //useWalletClient minipay
   const createSavingPools = async () => {
-    if (window.ethereum || window.ethereum.isMiniPay) {
+    if (walletClient) {
       try {
         const amountToContribute: BigNumber = ethers.utils.parseEther(
           debouncedContributionPerParticipant.toString()
@@ -116,42 +111,25 @@ const CreatePoolForm = () => {
               position: 'top-center',
             });
 
-            // let hash = await walletClient.writeContract({
-            //   abi: SavingsPoolABI2,
-            //   address: SavingsPoolAddress2,
-            //   functionName: 'createPool',
-            //   args: [
-            //     debouncedPoolName,
-            //     debouncedMaxParticipants,
-            //     amountToContribute,
-            //     debouncedDurationPerTurn,
-            //     debouncedIsRestricted,
-            //   ],
-            // });
-            // await publicClient.waitForTransactionReceipt({ hash });
-            
-              const provider = new ethers.providers.Web3Provider(window.ethereum);
-              const signer = await provider.getSigner(address);
-              const cusdcContract = new Contract(SavingsPoolAddress2,SavingsPoolABI2,signer);
-              const tx = await cusdcContract.createPool(debouncedPoolName,
-                   debouncedMaxParticipants,
-                    amountToContribute,
-                    debouncedDurationPerTurn,
-                    debouncedIsRestricted,);
-              const txhash= await tx.wait();
-              toast.success('Saving Pool Created!', { id: createToast });
-              setVisible(false);
-              clearForm();
-              setTimeout(() => {
-                router.refresh();
-              }, 8000);
-            
-            
+            let hash = await walletClient.writeContract({
+              abi: SavingsPoolABI2,
+              address: SavingsPoolAddress2,
+              functionName: 'createPool',
+              args: [
+                debouncedPoolName,
+                debouncedMaxParticipants,
+                amountToContribute,
+                debouncedDurationPerTurn,
+                debouncedIsRestricted,
+              ],
+            });
+            await publicClient.waitForTransactionReceipt({ hash });
+            toast.success('Saving Pool Created!', { id: createToast });
+			setVisible(false);
+			clearForm();
           } catch (e) {
             toast.error('Something Went Wrong!');
           }
-           
-           
         }
       } catch (e) {
         toast.error('Something Went Wrong!');
