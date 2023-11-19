@@ -19,7 +19,12 @@ export const fontSans = FontSans({
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID as string;
 const { chains, publicClient } = configureChains([Celo], [publicProvider()]);
 
-const connectors = [new InjectedConnector({ chains })];
+// const connectors = [new InjectedConnector({ chains })];
+const connectors = celoGroups({
+  chains,
+  projectId,
+  appName: (typeof document === "object" && document.title) || "Chama",
+});
 
 const appInfo = {
   appName: 'Celo Composer',
