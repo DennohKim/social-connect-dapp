@@ -1,63 +1,59 @@
-<!-- TITLE -->
-<p align="center"> 
-  <img width="100px" src="https://github.com/celo-org/celo-composer/blob/main/images/readme/celo_isotype.svg" align="center" alt="Celo" />
- <h2 align="center">Celo Composer</h2>
- <p align="center">Build, deploy, and iterate quickly on decentralized applications using Celo.</p>
-</p>
-  <p align="center">
-    <a href="https://github.com/celo-org/celo-composer/graphs/stars">
-      <img alt="GitHub Contributors" src="https://img.shields.io/github/stars/celo-org/celo-composer?color=FCFF52" />
-    </a>
-    <a href="https://github.com/celo-org/celo-composer/graphs/contributors">
-      <img alt="GitHub Contributors" src="https://img.shields.io/github/contributors/celo-org/celo-composer?color=E7E3D4" />
-    </a>
-    <a href="https://github.com/celo-org/celo-composer/issues">
-      <img alt="Issues" src="https://img.shields.io/github/issues/celo-org/celo-composer?color=E7E3D4" />
-    </a>
-    <a href="https://github.com/celo-org/celo-composer/pulls">
-      <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/celo-org/celo-composer?color=E7E3D4" />
-    </a>
-    <a href="https://opensource.org/license/mit/">
-      <img alt="MIT License" src="https://img.shields.io/badge/License-MIT-yellow.svg" />
-    </a>
-  </p>
-</p>
 
-<!-- TABLE OF CONTENTS -->
 
-<details>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-    <li><a href="#acknowledgments">Acknowledgments</a></li>
-  </ol>
-</details>
+# CeloDev Stream Web App - Build With Celo 4 - MiniPay Hackathon
+## By Dennis Kimathi | Ronnex Ondimu | Ibrahim Aziz
 
-<!-- ABOUT THE PROJECT -->
+## Screenshot
+ ![image](./chamaa-dapp.png)
 
-## About The Project
 
-Celo Composer allows you to quickly build, deploy, and iterate on decentralized applications using Celo. It provides a number of frameworks, examples, and Celo specific functionality to help you get started with your next dApp.
+ ## Table of Content
+ - [Demo Video](#demo-video)
+ - [Pitch Deck](#pitch-deck)
+ - [Features](#features)
+ - [Requirements](#requirements)
+ - [Installation Process](#installation-Process)
+ - [Live Link](#Live-Link)
+ - [Technology  Used](#technology-Used)
+ - [License](#license)
+ - [Authors Info](#Authors-Info)
 
-<p align="right">(<a href="#top">back to top</a>)</p>
 
-## Built With
+## Demo video
+
+https://share.vidyard.com/watch/tsfog7C9TCzBysn3VR6KqA?
+
+
+[Go Back to the top](#Chamaa-Dapp-Web-app)
+
+## Pitch Deck
+
+- [Presentation](https://www.canva.com/design/DAF0i4Vn-7g/rXEvZ28I8Nc6vIU5gwjylQ/edit?utm_content=DAF0i4Vn-7g&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+
+## Features
+1. As a user, I want to create a savings pool to save with friends.
+2. As a user, I want to join non-restricted pools to save with other people.
+3. As a user, I want to contribute to a savings pool using cUSD.
+4. As a user, I want to claim contributions when its my turn. 
+
+ ###  Requirements
+ * Access to  a computer 
+ * Access to internet
+
+ ### Installation Process
+ ****
+* Clone to the repo : git clone hhttps://github.com/DennohKim/social-saving-pool-bwc4
+* In the root directory, run the following command to install the packages ``` yarn```.
+* Run `yarn react-app:dev` to launch the app
+
+ ****
+
+### Live Link
+- Click this link to view the live application https://social-saving-pool-bwc4-react-app.vercel.app/
+
+### Technology  Used
+
+- [Celo-composer](https://github.com/celo-org/celo-composer)
 
 Celo Composer is built on Celo to make it simple to build dApps using a variety of front-end frameworks, and libraries.
 
@@ -65,133 +61,44 @@ Celo Composer is built on Celo to make it simple to build dApps using a variety 
 - [Solidity](https://docs.soliditylang.org/en/v0.8.19/)
 - [Next.js](https://nextjs.org/)
 - [React.js](https://reactjs.org/)
-- [Material UI](https://mui.com/)
-- [React Native](https://reactnative.dev/)
-- [Flutter](https://docs.flutter.dev/)
-- [React-celo](https://github.com/celo-org/react-celo/)
+- [Shadcn UI](https://ui.shadcn.com/)
 - [Rainbowkit-celo](https://github.com/celo-org/rainbowkit-celo)
+- [Social-Connect](https://github.com/celo-org/SocialConnect#-exampleshttps://github.com/celo-org/SocialConnect#-examples)
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+SocialConnect is an open source protocol that maps off-chain personal identifiers (such as phone numbers, twitter handles, etc.) to on-chain account addresses. This enables a convenient and interoperable user experience for use cases such as:
 
-<!-- GETTING STARTED -->
+- payments - send money directly to your friend's phone number!
+- social discovery - find someone's account based on their twitter!
+- any other identity applications!
 
-## Prerequisites
 
-- Node
-- Git (v2.38 or higher)
-
-## How to use Celo Composer
-
-The easiest way to start with Celo Composer is using `@celo/celo-composer`. This CLI tool lets you quickly start building dApps on Celo for multiple frameworks, including React (with either react-celo or rainbowkit-celo), React Native (w/o Expo), Flutter, and Angular. To get started, just run the following command, and follow the steps:
-
-```bash
-npx @celo/celo-composer@latest create
-```
-
-### Front-end framework
-
-![Celo Composer select framework](https://github.com/celo-org/celo-composer/blob/main/images/readme/cc_step_1.png?raw=true)
-
-### Web3 library (for react-app)
-
-![Celo Composer select framework](https://github.com/celo-org/celo-composer/blob/main/images/readme/cc_step_2.png?raw=true)
-
-### Smart contract framework
-
-![Celo Composer tool selection](https://github.com/celo-org/celo-composer/blob/main/images/readme/cc_step_3.png?raw=true)
-
-### Subgraph
-
-![Celo Composer subgraph support](https://github.com/celo-org/celo-composer/blob/main/images/readme/cc_step_4.png?raw=true)
-
-### Name your dApp
-
-![Celo Composer dApp name](https://github.com/celo-org/celo-composer/blob/main/images/readme/cc_step_5.png?raw=true)
-
-**_🔥Voila, you have a dApp ready to go. Voila, you have a dApp ready to go. Start building your dApp on Celo._**
-
-### Getting started
-
-Once your custom dApp has been created, just install dependencies, either with `yarn` or `npm i`, and run the respective script from the `package.json` file.
-## Supported Frameworks
-
-### React
-
-- Support for Website and Progressive Web Application.
-- Works with all major crypto wallets.
-
-Check [package readme](https://github.com/celo-org/celo-composer/blob/main/packages/react-app/README.md) to learn more about.
-
-### React Native
-
-- Out of the box config, just focus on buidl.
-- Support for Android and IOS.
-- Works with and without [Expo](https://expo.dev/).
-- Working example app included.
-
-Check [package readme](https://github.com/celo-org/celo-composer/blob/main/packages/react-native-app/README.md) to learn more about.
-
-### Flutter
-
-- One command to get started - Type `flutter run` to start development in your mobile phone.
-- Works with all major mobile crypto wallets.
-- Support for Android, IOS (Web, Windows, and Linux coming soon).
-- Working example app included.
-
-Check [package readme](https://github.com/celo-org/celo-composer/blob/main/packages/flutter-app/README.md) to learn more about.
-
-### Angular
-
-- Support for Website and Progressive Web Application.
-- Works with all major crypto wallets.
-
-Check [package readme](https://github.com/celo-org/celo-composer/blob/main/packages/angular-app/README.md) to learn more about.
-
-<!-- USAGE EXAMPLES -->
-
-## 🔭 Learning Solidity
-
-📕 Read the docs: <https://docs.soliditylang.org>
-
-- [Primitive Data Types](https://solidity-by-example.org/primitives/)
-- [Mappings](https://solidity-by-example.org/mapping/)
-- [Structs](https://solidity-by-example.org/structs/)
-- [Modifiers](https://solidity-by-example.org/function-modifier/)
-- [Events](https://solidity-by-example.org/events/)
-- [Inheritance](https://solidity-by-example.org/inheritance/)
-- [Payable](https://solidity-by-example.org/payable/)
-- [Fallback](https://solidity-by-example.org/fallback/)
-
-📧 Learn the [Solidity globals and units](https://solidity.readthedocs.io/en/v0.8.19/units-and-global-variables.html)
-
-## Support
-
-Join the Celo Discord server at <https://chat.celo.org>. Reach out on the dedicated repo channel [here](https://discord.com/channels/600834479145353243/941003424298856448).
-
-<!-- ROADMAP -->
-
-## Roadmap
-
-See the [open issues](https://github.com/celo-org/celo-composer/issues) for a full list of proposed features (and known issues).
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-<!-- CONTRIBUTING -->
-
-## Contributing
-
-We welcome contributions from the community.
-
-<p align="right">(<a href="#top">back to top</a>)</p>
 
 ## License
+MIT License
+Copyright (c) [2023] [License](LICENSE.txt)
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+## Authors Info
 
-<!-- CONTACT -->
-## Contact
+Contributors  
+- [Dennis Kimathi](https://github.com/DennohKim)
+- [Ronnex Ondimu](https://github.com/Ronex-Ondimu)
+- [Ibrahim Aziz](https://github.com/ibraziz21)
 
-- [@CeloDevs](https://twitter.com/CeloDevs)
-- [Discord](https://discord.com/invite/celo)
+ 
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+[Go Back to the top](#Chamaa-Dapp-Web-app)

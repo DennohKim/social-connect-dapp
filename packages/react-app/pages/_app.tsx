@@ -8,7 +8,7 @@ import { publicProvider } from 'wagmi/providers/public';
 import Layout from '../components/Layout';
 import '../styles/globals.css';
 import { InjectedConnector } from 'wagmi/connectors/injected';
-import { Lexend as FontSans } from 'next/font/google';
+import { Outfit as FontSans } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import ClientOnly from '@/components/CllientOnly';
 
