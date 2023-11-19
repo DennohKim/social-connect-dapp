@@ -36,9 +36,11 @@ const MyPoolsList = () => {
       {isLoading && address ? (
         <p>Data Loading...</p>
       ) : Array.isArray(mySavingsPool) ? (
-        mySavingsPool.map((pool: PoolDetails) => (
-          <MyPoolCard key={pool.poolID} pool={pool} />
-        ))
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          {mySavingsPool.map((pool: PoolDetails) => (
+            <MyPoolCard key={pool.poolID} pool={pool} />
+          ))}
+        </div>
       ) : (
         <p>No Pools available</p>
       )}

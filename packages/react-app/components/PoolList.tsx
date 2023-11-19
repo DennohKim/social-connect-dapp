@@ -7,7 +7,7 @@ import { useContractRead } from 'wagmi';
 import { SavingsPoolABI2, SavingsPoolAddress2 } from '@/constants/constants';
 
 const PoolList = () => {
-   const [pools, setPools] = useState<PoolDetails[]>([]);
+  const [pools, setPools] = useState<PoolDetails[]>([]);
 
   const {
     data: savingsPool,
@@ -21,16 +21,16 @@ const PoolList = () => {
 
   console.log('poolsData', savingsPool);
 
- 
-
   return (
     <>
       {isLoading ? (
         <p>Data Loading...</p>
       ) : Array.isArray(savingsPool) ? (
-        savingsPool.map((pool: PoolDetails) => (
-          <PoolCard key={pool.poolID} pool={pool} />
-        ))
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+          {savingsPool.map((pool: PoolDetails) => (
+            <PoolCard key={pool.poolID} pool={pool} />
+          ))}
+        </div>
       ) : (
         <p>No data available</p>
       )}
