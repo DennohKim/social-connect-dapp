@@ -1,6 +1,6 @@
 
 
-# CeloDev Stream Web App - Build With Celo 4 - MiniPay Hackathon
+# Chamaa - Build With Celo 4 - MiniPay Hackathon
 ## By Dennis Kimathi | Ronnex Ondimu | Ibrahim Aziz
 
 ## Screenshot
