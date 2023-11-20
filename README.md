@@ -96,7 +96,7 @@ SOFTWARE.
 
 Contributors  
 - [Dennis Kimathi](https://github.com/DennohKim)
-- [Ronnex Ondimu](https://github.com/Ronex-Ondimu)
+- [Ronnex Ondimu](https://github.com/RonexLemon)
 - [Ibrahim Aziz](https://github.com/ibraziz21)
 
  
