@@ -4,25 +4,22 @@ import { BigNumber } from 'ethers';
 import { useWriteContract, useSimulateContract } from 'wagmi';
 
 export const useContractSend = (functionName: string, args: Array<any>) => {
-  const gasLimit = BigNumber.from(1000000);
-
-  const { config } = useSimulateContract({
+  const { data: simulateData } = useSimulateContract({
     address: SavingsPoolAddress2,
     abi: SavingsPoolABI2,
     functionName,
     args,
-    // overrides: {
-    //   gasLimit,
-    // },
-
-    onError: (err) => {
-      console.log({ err });
-    },
   });
 
-  // Write to the smart contract using the prepared config
-  const { data, isSuccess, write, writeAsync, error, isLoading } =
-    useWriteContract(config);
+  const { data, isSuccess, writeContract: write, writeContractAsync: writeAsync, error, isPending } =
+    useWriteContract();
 
-  return { data, isSuccess, write, writeAsync, isLoading, error };
+  return { 
+    data, 
+    isSuccess, 
+    write: () => simulateData?.request ? write(simulateData.request) : undefined,
+    writeAsync: () => simulateData?.request ? writeAsync?.(simulateData.request) : undefined,
+    isLoading: isPending,
+    error 
+  };
 };

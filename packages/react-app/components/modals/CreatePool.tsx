@@ -156,14 +156,14 @@ const CreatePoolForm = () => {
     // console.log('Is Restricted:', debouncedIsRestricted);
     // console.log('Duration Per Turn:', debouncedDurationPerTurn);
 
-    const { hash: approveHash } = await approveSpending();
-    await publicClient?.waitForTransactionReceipt({ hash: approveHash });
+    const approveResult = await approveSpending();
+    if (!approveResult) throw new Error("Approval failed");
+    await publicClient?.waitForTransactionReceipt({ hash: approveResult });
 
     setLoading('Creating...');
-    const { hash: createHash } = await createPool();
-    setLoading('Waiting for confirmation...');
-
-    await publicClient?.waitForTransactionReceipt({ hash: createHash });
+    const createResult = await createPool();
+    if (!createResult) throw new Error("Creation failed");
+    await publicClient?.waitForTransactionReceipt({ hash: createResult });
 
     setVisible(false);
     clearForm();

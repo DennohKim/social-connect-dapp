@@ -6,22 +6,21 @@ import { BigNumber } from 'ethers';
 import { SavingsPoolAddress2 } from '@/constants/constants';
 
 export const useContractApprove = (contributionPerPartipant: number) => {
-  const gasLimit = BigNumber.from(1000000);
-  const { config } = useSimulateContract({
+  const { data: simulateData } = useSimulateContract({
     address: Erc20Instance.address as `0x${string}`,
     abi: Erc20Instance.abi,
     functionName: 'approve',
     args: [SavingsPoolAddress2, contributionPerPartipant],
-    // overrides: {
-    //   gasLimit,
-    // },
-    onError: (err) => {
-      console.log({ err });
-    },
   });
 
-  // Write to the smart contract using the prepared config
-  const { data, isSuccess, write, writeAsync, error, isLoading } =
-    useWriteContract(config);
-  return { data, isSuccess, write, writeAsync, isLoading };
+  const { data, isSuccess, writeContract: write, writeContractAsync: writeAsync, isPending } =
+    useWriteContract();
+
+  return { 
+    data, 
+    isSuccess, 
+    write: () => simulateData?.request ? write(simulateData.request) : undefined,
+    writeAsync: () => simulateData?.request ? writeAsync?.(simulateData.request) : undefined,
+    isLoading: isPending 
+  };
 };
