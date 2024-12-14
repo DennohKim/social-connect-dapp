@@ -15,7 +15,7 @@ export interface Pool {
   isRestrictedPool: boolean;
 }
 
-export interface PoolDetails {
+export interface iPoolDetails {
   owner: string;
   name: string;
   userTurnAddress:string;

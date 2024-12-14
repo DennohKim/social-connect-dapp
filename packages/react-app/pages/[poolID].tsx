@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Pool } from '@/interfaces/types';
 import { getPoolsData } from '@/data/pools';
 import { convertBlockTimestampToDate, truncateAddr } from '@/lib/utils';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -26,6 +25,7 @@ import { ethers,Contract } from 'ethers';
 import toast from 'react-hot-toast';
 import { LookupResponse } from './api/lookup';
 import { Separator } from '@radix-ui/react-select';
+import {iPoolDetails } from '@/interfaces/types';
 
 const PoolDetails = () => {
   const router = useRouter();
@@ -38,7 +38,7 @@ const PoolDetails = () => {
 
   const { poolID } = router.query;
 
-  const [selectedPool, setSelectedPool] = useState<PoolDetails>();
+  const [selectedPool, setSelectedPool] = useState<iPoolDetails>();
   const [userAddress, setUserAddress] = useState<string>('');
   console.log('userAddress', userAddress);
 
@@ -67,7 +67,7 @@ const PoolDetails = () => {
     if (savingsPool && poolID) {
       const pool = Array.isArray(savingsPool)
         ? savingsPool.find(
-            (pool: PoolDetails) => Number(pool.poolID) === Number(poolID)
+            (pool: iPoolDetails) => Number(pool.poolID) === Number(poolID)
           )
         : null;
       //   console.log(pool)
@@ -94,7 +94,7 @@ const PoolDetails = () => {
           functionName: 'approve',
           args: [SavingsPoolAddress2, selectedPool?.contributionPerParticipant],
         });
-        const txhash = await publicClient.waitForTransactionReceipt({ hash });
+        const txhash = await publicClient?.waitForTransactionReceipt({ hash });
 
         toast.success('Transfer Approved!', { id: createToast });
         return txhash;
@@ -120,7 +120,7 @@ const PoolDetails = () => {
             Number(selectedPool?.contributionPerParticipant) * 2,
           ],
         });
-        const txhash = await publicClient.waitForTransactionReceipt({ hash });
+        const txhash = await publicClient?.waitForTransactionReceipt({ hash });
 
         toast.success('Transfer Approved!', { id: createToast });
         return txhash;
@@ -152,7 +152,7 @@ const PoolDetails = () => {
               functionName: 'contributeToPool',
               args: [selectedPool?.poolID],
             });
-            await publicClient.waitForTransactionReceipt({ hash });
+            await publicClient?.waitForTransactionReceipt({ hash });
             toast.success(
               `You have contributed to ${selectedPool?.name} Saving Pool!`,
               { id: createToast }
@@ -185,7 +185,7 @@ const PoolDetails = () => {
               functionName: 'joinPool',
               args: [selectedPool?.poolID],
             });
-            await publicClient.waitForTransactionReceipt({ hash });
+            await publicClient?.waitForTransactionReceipt({ hash });
             toast.success(
               `You have joined ${selectedPool?.name} Saving Pool!`,
               { id: createToast }
@@ -214,7 +214,7 @@ const PoolDetails = () => {
           functionName: 'claimTurn',
           args: [selectedPool?.poolID],
         });
-        await publicClient.waitForTransactionReceipt({ hash });
+        await publicClient?.waitForTransactionReceipt({ hash });
         toast.success(
           `You have claimed your turn in ${selectedPool?.name} Saving Pool!`,
           { id: createToast }
@@ -264,7 +264,7 @@ const PoolDetails = () => {
           functionName: 'setFriendly',
           args: [userAddress],
         });
-        await publicClient.waitForTransactionReceipt({ hash });
+        await publicClient?.waitForTransactionReceipt({ hash });
         toast.success(
           `You have added a friend to ${selectedPool?.name} Saving Pool!`,
           { id: createToast }
@@ -399,7 +399,7 @@ const PoolDetails = () => {
                     <p className='font-semibold'>Participants</p>
                     {/* <p className='font-semibold self-end'>Has Received</p> */}
                   </div>
-                  {selectedPool.participants.map((participant, index) => (
+                  {selectedPool.participants.map((participant: string, index: number) => (
                     <div
                       key={`participant-${index}`}
                       className='flex justify-between  w-full'
