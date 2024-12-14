@@ -1,4 +1,4 @@
-import { Pool, PoolDetails } from '@/interfaces/types';
+import { Pool, iPoolDetails } from '@/interfaces/types';
 import { generateDummyData } from '@/lib/data';
 import React, { useEffect, useState } from 'react';
 import { PoolCard } from './PoolCard';
@@ -7,7 +7,7 @@ import { useReadContract } from 'wagmi';
 import { SavingsPoolABI2, SavingsPoolAddress2 } from '@/constants/constants';
 
 const PoolList = () => {
-  const [pools, setPools] = useState<PoolDetails[]>([]);
+  const [pools, setPools] = useState<iPoolDetails[]>([]);
 
   const {
     data: savingsPool,
@@ -27,7 +27,7 @@ const PoolList = () => {
         <p>Data Loading...</p>
       ) : Array.isArray(savingsPool) ? (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-          {savingsPool.map((pool: PoolDetails) => (
+          {savingsPool.map((pool: iPoolDetails) => (
             <PoolCard key={pool.poolID} pool={pool} />
           ))}
         </div>

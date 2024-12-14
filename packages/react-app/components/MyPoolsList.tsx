@@ -1,8 +1,8 @@
-import { Pool, PoolDetails } from '@/interfaces/types';
+import { Pool, iPoolDetails } from '@/interfaces/types';
 import { generateDummyData } from '@/lib/data';
 import React, { useEffect, useState } from 'react';
 import { getPoolsData } from '@/data/pools';
-import { useAccount, useContractRead } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { SavingsPoolABI2, SavingsPoolAddress2 } from '@/constants/constants';
 import { MyPoolCard } from './MyPoolCard';
 
@@ -22,7 +22,7 @@ const MyPoolsList = () => {
      data: mySavingsPool,
      isError,
      isLoading,
-   } = useContractRead({
+   } = useReadContract({
      address: SavingsPoolAddress2,
      abi: SavingsPoolABI2,
      functionName: 'getOwnerSavingPools',
@@ -37,7 +37,7 @@ const MyPoolsList = () => {
         <p>Data Loading...</p>
       ) : Array.isArray(mySavingsPool) ? (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-          {mySavingsPool.map((pool: PoolDetails) => (
+          {mySavingsPool.map((pool: iPoolDetails) => (
             <MyPoolCard key={pool.poolID} pool={pool} />
           ))}
         </div>

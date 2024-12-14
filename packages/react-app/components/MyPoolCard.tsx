@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Pool, PoolDetails } from '@/interfaces/types';
+import { Pool, iPoolDetails } from '@/interfaces/types';
 import { truncateAddr } from '@/lib/utils';
 import { poll } from 'ethers/lib/utils';
 import Link from 'next/link';
@@ -19,7 +19,7 @@ import { CusdAbi, SavingsPoolABI2, SavingsPoolAddress2, cUSDContractAddress } fr
 import toast from 'react-hot-toast';
 
 interface PoolCardProps {
-  pool: PoolDetails;
+  pool: iPoolDetails;
 }
 
 export function MyPoolCard({ pool }: PoolCardProps) {
@@ -41,7 +41,7 @@ export function MyPoolCard({ pool }: PoolCardProps) {
           functionName: 'approve',
           args: [SavingsPoolAddress2, pool?.contributionPerParticipant],
         });
-        const txhash = await publicClient.waitForTransactionReceipt({ hash });
+        const txhash = await publicClient?.waitForTransactionReceipt({ hash });
 
         toast.success('Transfer Approved!', { id: createToast });
         return txhash;
@@ -69,7 +69,7 @@ export function MyPoolCard({ pool }: PoolCardProps) {
               functionName: 'joinPool',
               args: [pool?.poolID],
             });
-            await publicClient.waitForTransactionReceipt({ hash });
+            await publicClient?.waitForTransactionReceipt({ hash });
             toast.success(
               `You have joined ${pool?.name} Saving Pool!`,
               { id: createToast }
