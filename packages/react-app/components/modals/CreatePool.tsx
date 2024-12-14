@@ -3,7 +3,6 @@ import { useAccount, useWalletClient, usePublicClient } from 'wagmi';
 import { useDebounce } from 'use-debounce';
 import { useEffect, useState } from 'react';
 import { useContractSend } from '@/hooks/useContractWrite';
-import { waitForTransaction } from '@wagmi/core';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useContractApprove } from '@/hooks/useApprove';
@@ -85,7 +84,7 @@ const CreatePoolForm = () => {
           functionName: 'approve',
           args: [SavingsPoolAddress2, amountToContribute],
         });
-        const txhash = await publicClient.waitForTransactionReceipt({ hash });
+        const txhash = await publicClient?.waitForTransactionReceipt({ hash });
 
         toast.success('Transfer Approved!', { id: createToast });
         return txhash;
@@ -123,7 +122,7 @@ const CreatePoolForm = () => {
                 debouncedIsRestricted,
               ],
             });
-            await publicClient.waitForTransactionReceipt({ hash });
+            await publicClient?.waitForTransactionReceipt({ hash });
             toast.success('Saving Pool Created!', { id: createToast });
 			setVisible(false);
 			clearForm();
@@ -158,13 +157,13 @@ const CreatePoolForm = () => {
     // console.log('Duration Per Turn:', debouncedDurationPerTurn);
 
     const { hash: approveHash } = await approveSpending();
-    await waitForTransaction({ confirmations: 1, hash: approveHash });
+    await publicClient?.waitForTransactionReceipt({ hash: approveHash });
 
     setLoading('Creating...');
     const { hash: createHash } = await createPool();
     setLoading('Waiting for confirmation...');
 
-    await waitForTransaction({ confirmations: 1, hash: createHash });
+    await publicClient?.waitForTransactionReceipt({ hash: createHash });
 
     setVisible(false);
     clearForm();
