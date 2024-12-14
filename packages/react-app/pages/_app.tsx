@@ -1,39 +1,34 @@
-import { Alfajores, Celo } from '@celo/rainbowkit-celo/chains';
-import celoGroups from '@celo/rainbowkit-celo/lists';
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider, getDefaultConfig} from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import type { AppProps } from 'next/app';
-import { WagmiConfig, configureChains, createConfig } from 'wagmi';
-import { publicProvider } from 'wagmi/providers/public';
 import Layout from '../components/Layout';
 import '../styles/globals.css';
-import { InjectedConnector } from 'wagmi/connectors/injected';
 import { Outfit as FontSans } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import ClientOnly from '@/components/CllientOnly';
+import {
+ liskSepolia
+} from 'wagmi/chains';
+import {
+  QueryClientProvider,
+  QueryClient,
+} from "@tanstack/react-query";
+import { WagmiProvider } from 'wagmi';
 
 export const fontSans = FontSans({
   subsets: ['latin'],
   variable: '--font-sans',
 });
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID as string;
-const { chains, publicClient } = configureChains([Celo], [publicProvider()]);
-
-// const connectors = [new InjectedConnector({ chains })];
-const connectors = celoGroups({
-  chains,
-  projectId,
-  appName: (typeof document === "object" && document.title) || "Chama",
+const config = getDefaultConfig({
+  appName: 'My RainbowKit App',
+  projectId: 'YOUR_PROJECT_ID',
+  chains: [liskSepolia],
+  ssr: true, // If your dApp uses server side rendering (SSR)
 });
 
-const appInfo = {
-  appName: 'Celo Composer',
-};
+const queryClient = new QueryClient();
 
-const wagmiConfig = createConfig({
-  connectors,
-  publicClient: publicClient,
-});
 
 function App({ Component, pageProps }: AppProps) {
   return (
@@ -43,17 +38,19 @@ function App({ Component, pageProps }: AppProps) {
           font-family: ${fontSans.style.fontFamily};
         }
       `}</style>
-      <WagmiConfig config={wagmiConfig}>
-        <RainbowKitProvider chains={chains} appInfo={appInfo} coolMode={true}>
-          <ClientOnly>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </ClientOnly>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <RainbowKitProvider coolMode={true}>
+            <ClientOnly>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+              </ClientOnly>
 
           <Toaster position='top-center' />
         </RainbowKitProvider>
-      </WagmiConfig>
+        </QueryClientProvider>
+      </WagmiProvider>
     </>
   );
 }

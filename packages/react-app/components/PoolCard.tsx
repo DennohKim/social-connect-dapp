@@ -126,7 +126,7 @@ export function PoolCard({ pool }: PoolCardProps) {
                   {ethers.utils.formatEther(
                     pool.contributionPerParticipant
                   )}{' '}
-                  cUSD
+                  USDC
                 </h2>
               </div>{' '}
             </div>

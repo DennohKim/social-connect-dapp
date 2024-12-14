@@ -3,7 +3,7 @@ import { generateDummyData } from '@/lib/data';
 import React, { useEffect, useState } from 'react';
 import { PoolCard } from './PoolCard';
 import { getPoolsData } from '@/data/pools';
-import { useContractRead } from 'wagmi';
+import { useReadContract } from 'wagmi';
 import { SavingsPoolABI2, SavingsPoolAddress2 } from '@/constants/constants';
 
 const PoolList = () => {
@@ -13,7 +13,7 @@ const PoolList = () => {
     data: savingsPool,
     isError,
     isLoading,
-  } = useContractRead({
+  } = useReadContract ({
     address: SavingsPoolAddress2,
     abi: SavingsPoolABI2,
     functionName: 'getAllSavingPools',

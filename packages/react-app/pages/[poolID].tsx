@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Pool, PoolDetails } from '@/interfaces/types';
+import { Pool } from '@/interfaces/types';
 import { getPoolsData } from '@/data/pools';
 import { convertBlockTimestampToDate, truncateAddr } from '@/lib/utils';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 
 import {
   useAccount,
-  useContractRead,
+  useReadContract,
   usePublicClient,
   useWalletClient,
 } from 'wagmi';
@@ -57,7 +57,7 @@ const PoolDetails = () => {
     data: savingsPool,
     isError,
     isLoading,
-  } = useContractRead({
+  } = useReadContract({
     address: SavingsPoolAddress2,
     abi: SavingsPoolABI2,
     functionName: 'getAllSavingPools',
@@ -292,6 +292,7 @@ const PoolDetails = () => {
         </div>
       </div>
 
+
       {/* Pool Details */}
       <div className='py-3'>
         <h2 className='text-lg font-bold pb-4'>Pool Details</h2>
@@ -316,7 +317,7 @@ const PoolDetails = () => {
                 <div className='flex flex-col space-y-1'>
                   <h2 className='font-semibold text-sm'>Pool Balance</h2>
                   <h2 className='font-normal self-end'>
-                    {ethers.utils.formatEther(selectedPool._poolBalance)} cUSD
+                    {ethers.utils.formatEther(selectedPool._poolBalance)} USDC
                   </h2>
                 </div>
               </div>
@@ -336,7 +337,7 @@ const PoolDetails = () => {
                     {ethers.utils.formatEther(
                       selectedPool.contributionPerParticipant
                     )}{' '}
-                    cUSD
+                    USDC
                   </h2>
                 </div>{' '}
               </div>

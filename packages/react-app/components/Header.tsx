@@ -5,23 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useConnect } from "wagmi";
-import { InjectedConnector } from "wagmi/connectors/injected";
+import { useAccount, useConnect } from "wagmi";
 
 export default function Header() {
-  const [hideConnectBtn, setHideConnectBtn] = useState(false);
-  const { connect } = useConnect({
-    connector: new InjectedConnector(),
-  });
-
-  const router = useRouter();
-
-  useEffect(() => {
-    if (window.ethereum && window.ethereum.isMiniPay) {
-      setHideConnectBtn(true);
-      connect();
-    }
-  }, [connect]);
+  const { isConnected } = useAccount();
 
   return (
     <Disclosure as='nav' className='bg-background border-b border-black'>
@@ -70,7 +57,7 @@ export default function Header() {
                 </div>
 
                 <div className='absolute inset-y-0 right-0 flex items-center sm:static sm:inset-auto sm:ml-6 sm:pr-0'>
-                  {!hideConnectBtn && (
+                 
                     <ConnectButton
                       showBalance={{
                         smallScreen: false,
@@ -85,7 +72,7 @@ export default function Header() {
                         largeScreen: 'full',
                       }}
                     />
-                  )}
+                 
                 </div>
               </div>
             </div>
@@ -114,10 +101,4 @@ export default function Header() {
       )}
     </Disclosure>
   );
-}
-
-declare global {
-  interface Window {
-    ethereum: any;
-  }
 }
